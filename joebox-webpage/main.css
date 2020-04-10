@@ -1,0 +1,37 @@
+
+@font-face {
+    font-family: "montserrat-bold";
+    src: url("./fonts/montserrat/Montserrat-Bold.otf");
+}
+@font-face {
+    font-family: "montserrat";
+    src: url("./fonts/montserrat/Montserrat-Regular.otf");
+}
+
+.header {
+  text-align:center;
+  font-size: 36px;
+  font-weight:bold;
+  font-family: montserrat;
+  color:white;
+  background:black;
+  padding: 20px;
+}
+
+
+h2 {
+  font-size: 36px;
+  font-weight:bold;
+  font-family: montserrat;
+  color:white;
+}
+
+input {
+  font-size: 24px;
+}
+
+body {
+  padding:0;
+  margin:0;
+  background: #141414;
+}
