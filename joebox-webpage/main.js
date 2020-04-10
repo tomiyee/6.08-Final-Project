@@ -1,6 +1,6 @@
 
 // The server url
-const SERVER_URL = "http://608dev-2.net/sandbox/sc/theng/bluffalo";
+const SERVER_URL = "http://608dev-2.net/sandbox/sc/theng/bluffalo.py";
 // The ms delay between sending messages
 const DT = 1000;
 // This will hold the input element that
@@ -12,8 +12,9 @@ window.onload = start;
 
 
 /**
- * @function start - This function is called once, like the setup() function in the
- * arduino
+ * @function start - This function is called once, like the setup() function in
+ * the ESP32 code. At the end of the function, it sets an interval to call the
+ * loop every DT ms
  */
 function start () {
   // Insert Start Code Here
@@ -30,47 +31,65 @@ function start () {
 /**
  * @function loop - This function will be called periodically, every DT ms
  */
-function loop () {
-
+async function loop () {
+  // 0. Do nothing if the user has not entered a room code
+  // 1. Send a request to the server for game data
+  // 2. Handle the response, displaying or hiding elements as necessary
 }
 
-function inputKeyDownHandler (e) {
-  // If they pressed enter, clear the input
-  if (e.keyCode == 13) {
-    roomCodeInput.value = "";
-  }
-}
 
 
 /**
- * @function sendHttpRequest - description
+ * @function inputKeyDownHandler - Handles the key down event when someone is
+ * typing into the input.
  *
- * @param  {type} type description
- * @param  {type} url  description
- * @param  {type} body description
- * @return {type}      description
+ * @param  {Event} e Key Down Event data
  */
-async function sendHttpRequest (type, url, body) {
-  const Http = new XMLHttpRequest();
-  Http.open(type, url)
-  Http.send();
+async function inputKeyDownHandler (e) {
+  // If they pressed enter, clear the input
+  if (e.keyCode == 13) {
+    // Clear the Input
+    roomCodeInput.value = "";
 
-  Http.onreadystatechange = (e) => {
-    if (this.readyState == 4 && this.status == 200) {
-
-    }
-    console.log(Http.responseText);
+    // Temporarily sends a response to this server.
+    let response = await sendHttpRequest ("GET", "http://608dev-2.net/sandbox/sc/theng/lab08a/lab08a.py");
   }
 }
-function test (url) {
+
+
+
+/**
+ * @function sendHttpRequest - Handles sending HTTP Requests and wraps the process
+ * into a Javascript Promise, which resolves once the response comes back from the
+ * server, or rejects if something in the process went wrong.
+ *
+ * @param  {String} type   The kind of HTTP Request, "GET", "POST", etc.
+ * @param  {String} url    The link to send the request to.
+ * @param  {String} [body] The body of the POST request
+ * @param  {String} [contentType="application/x-www-form-urlencoded"] The encoding of the body
+ * @return {Promise}       Resolves to the response of the HTTP Request
+ */
+async function sendHttpRequest (type, url, body, contentType="application/x-www-form-urlencoded") {
+  // Creates a new HTTP request
   const Http = new XMLHttpRequest();
-  Http.open('GET', url)
-  Http.send();
+  // Formats the header and bode and all that.
+  Http.open(type, url, true)
+  Http.setRequestHeader("Content-Type", contentType);
 
-  Http.onreadystatechange = (e) => {
-    if (this.readyState == 4 && this.status == 200) {
-
+  // Prepares the Javascript Promise to wrap around the HTTP Request
+  let p = new Promise ((res, rej) => {
+    Http.onreadystatechange = (e) => {
+      if (Http.readyState == XMLHttpRequest.DONE) {
+        // Successfully received response
+        if (Http.status == 200)
+          res(Http.responseText);
+        else
+          rej("HTTP Request went wrong.");
+      }
     }
-    console.log(Http.responseText);
-  }
+  });
+  // Sends the request to the server with the specified body
+  Http.send(body);
+  // Return the promise above
+  return p;
 }
