@@ -10,7 +10,6 @@ let roomCodeInput;
 window.onload = start;
 
 
-
 /**
  * @function start - This function is called once, like the setup() function in
  * the ESP32 code. At the end of the function, it sets an interval to call the
@@ -19,8 +18,15 @@ window.onload = start;
 function start () {
   // Insert Start Code Here
   roomCodeInput = document.getElementById("room-code-input");
-  roomCodeInput.addEventListener ('keydown', inputKeyDownHandler);
+  // roomCodeInput.addEventListener ('keydown', inputKeyDownHandler);
+  $('#room-code-input').keydown(inputKeyDownHandler);
+  
+  // $('.input-container').click(function () {
+  //   console.log("You clicked the input container")
+  // })
 
+
+  $('.game-container').hide();
 
   // Sets the loop to be called every DT ms
   setInterval (loop, DT);
@@ -49,8 +55,12 @@ async function inputKeyDownHandler (e) {
   // If they pressed enter, clear the input
   if (e.keyCode == 13) {
     // Clear the Input
-    roomCodeInput.value = "";
 
+    $(".input-container").hide();
+    $('.game-container').show();
+    $('.room-code').text(roomCodeInput.value);
+
+    roomCodeInput.value = "";
     // Temporarily sends a response to this server.
     let response = await sendHttpRequest ("GET", "http://608dev-2.net/sandbox/sc/theng/lab08a/lab08a.py");
   }
