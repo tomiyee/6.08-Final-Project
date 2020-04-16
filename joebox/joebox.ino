@@ -9,8 +9,7 @@ void setup () {
   tft.init();
   tft.setRotation(2);
   tft.setTextSize(1);
-  tft.fillScreen(TFT_BLACK);
-  printStartScreen();
+  tft.fillScreen(TFT_WHITE);
 }
 
 

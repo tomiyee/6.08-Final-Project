@@ -17,6 +17,40 @@ void printStartScreen(){
   drawBody();
 }
 
+
+//numPlayers: an integer with the number of players
+//scores, an array with the scores of each player where sizeof(scores) = numPlayers
+//        and scores[0] is the score of player 0.
+//users, a 2d array where user[0] is the name of player 0.
+void printScoreScreen(int numPlayers,int* scores,char users[][20]){
+  uint16_t colors[5] = {TFT_GREEN,TFT_BLUE,TFT_RED,TFT_YELLOW,TFT_BLACK};
+  int highest = 100;
+  for (int i =0; i< numPlayers;i++){
+    if (scores[i] > highest){
+      highest = scores[i];
+    }
+  }
+  
+  tft.setTextColor(TFT_BLACK);
+  for (int i = 0; i < numPlayers;i++){
+    tft.setCursor(0,i*30 + 1,1);
+    tft.print(users[i]);
+    tft.print(": ");
+    tft.println(scores[i]);
+    tft.println("\n\n");
+    int ypos = i*30+10;
+    
+    int len = (int)(((float)scores[i]/(float)highest)*115);
+    Serial.println(scores[i]);
+    Serial.println(len);
+    tft.drawRect(0,ypos,len,20,colors[i%6]);
+    tft.fillRect(0,ypos,len,20,colors[i%6]);
+  }
+
+}
+
+
+
 void drawPixelScaled(int x,int y,uint16_t color){
   int realX = x * 4;
   int realY = y * 4;
