@@ -1,9 +1,10 @@
-amn #include <WiFi.h> //Connect to WiFi Network
+#include <WiFi.h> //Connect to WiFi Network
 #include <SPI.h>
 #include <TFT_eSPI.h>
 #include <mpu6050_esp32.h>
 #include<math.h>
 #include<string.h>
+#include "Button.h" //important fancy button class from Button.h file
 
 TFT_eSPI tft = TFT_eSPI();
 const int SCREEN_HEIGHT = 160;
@@ -13,11 +14,9 @@ const int LOOP_PERIOD = 40;
 
 MPU6050 imu; //imu object called, appropriately, imu
 
-//char network[] = "NetGear_GMCK4";  //SSID 
-//char password[] = ""; //Password 
 
-char network[] = "NetGear_GMCK4";  //SSID for 6.08 Lab
-char password[] = "gqym1024"; //Password for 6.08 Lab
+char network[] = "NetGear_GMCK4"; 
+char password[] = "gqym1024"; 
 
 //Some constants and some resources:
 const int RESPONSE_TIMEOUT = 6000; //ms to wait for response from host
@@ -29,7 +28,7 @@ unsigned long primary_timer;
 
 int old_val;
 
-//used to get x,y values from IMU accelerometer!
+//used to get x,y values from IMU accelerometer
 void get_angle(float* x, float* y) {
   imu.readAccelData(imu.accelCount);
   *x = imu.accelCount[0] * imu.aRes;
@@ -38,7 +37,7 @@ void get_angle(float* x, float* y) {
 
 void lookup(char* query, char* response, int response_size) {
   char request_buffer[200];
-  //CHANGE WHERE THIS IS TARGETED! IT SHOULD TARGET YOUR SERVER SCRIPT
+  //CHANGE TO TARGET SERVER SCRIPT, to be determined later
   sprintf(request_buffer, "GET /sandbox/sc/person/wiki_getter.py?topic=%s HTTP/1.1\r\n", query);
   strcat(request_buffer, "Host: 608dev-2.net\r\n");
   strcat(request_buffer, "\r\n"); //new line from header to body
@@ -46,85 +45,9 @@ void lookup(char* query, char* response, int response_size) {
   do_http_request("608dev-2.net", request_buffer, response, response_size, RESPONSE_TIMEOUT, true);
 }
 
-class Button{
-  public:
-  uint32_t t_of_state_2;
-  uint32_t t_of_button_change;    
-  uint32_t debounce_time;
-  uint32_t long_press_time;
-  uint8_t pin;
-  uint8_t flag;
-  bool button_pressed;
-  uint8_t state; // This is public for the sake of convenience
-  Button(int p) {
-  flag = 0;  
-    state = 0;
-    pin = p;
-    t_of_state_2 = millis(); //init
-    t_of_button_change = millis(); //init
-    debounce_time = 10;
-    long_press_time = 1000;
-    button_pressed = 0;
-  }
-  void read() {
-    uint8_t button_state = digitalRead(pin);  
-    button_pressed = !button_state;
-  }
-  int update() {
-    read();
-    flag = 0;
-    if (state==0) {
-      if (button_pressed) {
-        state = 1;
-        t_of_button_change = millis();
-      }
-    } else if (state==1) {
-      if (!button_pressed){
-        state = 0;
-        t_of_button_change = millis();
-      }
-      else if(button_pressed && millis()-t_of_button_change >= debounce_time){
-        state = 2;
-        t_of_state_2 = millis();
-      }
-    } else if (state==2) {
-      if(button_pressed && millis() - t_of_state_2 >= long_press_time){
-        state = 3;
-      }
-      else if(!button_pressed){
-        state = 4;
-        t_of_button_change = millis();
-      }
-    } else if (state==3) {
-      if(!button_pressed){
-        state = 4;
-        t_of_button_change = millis();
-      }
-    } else if (state==4) {        
-      if(!button_pressed && millis()- t_of_button_change >= debounce_time){
-        state = 0;
-        if(millis() - t_of_state_2 > long_press_time + debounce_time){
-          flag = 2;
-        }
-        else{
-          flag = 1;
-        }
-      }
-      else if(button_pressed && millis() - t_of_state_2 < long_press_time){
-        state = 2;
-        t_of_button_change = millis();
-      }
-      else if(button_pressed && millis()-t_of_state_2 >= long_press_time){
-        state = 3;
-        t_of_button_change = millis();
-      }
-    }
-    return flag;
-  }
-};
 
-class WikipediaGetter {
-    char alphabet[50] = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+class FibbageGetter {
+    char alphabet[50] = " ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     char message[400] = {0}; //contains previous query response
     char query_string[50] = {0};
     int char_index;
@@ -133,8 +56,7 @@ class WikipediaGetter {
     const int scrolling_threshold = 150;
     const float angle_threshold = 0.3;
   public:
-
-    WikipediaGetter() {
+    FibbageGetter() {
       state = 0;
       memset(message, 0, sizeof(message));
       strcat(message, "Long Press to Start!");
@@ -146,59 +68,47 @@ class WikipediaGetter {
       if(state == 0){
         memset(output, 0, sizeof(output));
         strcat(output, message);
-        //memset(output, 0, sizeof(output));
         if(button==2){ //long press
           scrolling_timer = millis();
           state = 1;
         }
       }
       else if(state == 1){
-        //memset(query_string, 0, 50);
         memset(output, 0, sizeof(output));
         strcat(output, query_string);
         strncpy(holder, alphabet + char_index, 1);
         strcat(output, holder);
-        //strcat(output, alphabet[char_index]);
-        //Serial.println(alphabet[char_index]);
         if(button==0){
-          //Serial.println("hello");
           if(angle >= angle_threshold){
             if (millis() - scrolling_timer >= scrolling_threshold){
-              //char_index++;
               scrolling_timer = millis();
-              char_index = (char_index +1)%37;
+              char_index = (char_index +1)%27;
               memset(output, 0, sizeof(output));
               strcat(output, query_string);
               memset(holder, 0, sizeof(holder));
               strncpy(holder, alphabet + char_index, 1);
               strcat(output, holder);
-              //strcat(output, &alphabet[char_index]);
             }
           }
           else if(angle <= (-1)*angle_threshold){
             if (millis() - scrolling_timer >=scrolling_threshold){
               scrolling_timer = millis();
               if(char_index > 0){
-                char_index =(char_index-1 )%37;
+                char_index =(char_index-1 )%27;
               }
               else{
-                char_index = 36;
+                char_index = 26;
               }
               memset(output, 0, sizeof(output));
               strcat(output, query_string);
               memset(holder, 0, sizeof(holder));
               strncpy(holder, alphabet + char_index, 1);
               strcat(output, holder);
-              //strcat(output, &alphabet[char_index]);
-              
             }
           }
         }
         if(button == 1){//short press, add new letter to query
           strcat(query_string, holder);
-          //strcat(output, query_string);
-          //memset(output, 0, sizeof(output));
-          //query_string = query_string + alphabet[char_index];
           char_index = 0;
         }
         else if(button == 2){//long press
@@ -208,7 +118,7 @@ class WikipediaGetter {
       }
       else if(state == 2){
         memset(output, 0, sizeof(output)); //resets the string
-        strcat(output, "Sending Query");
+        strcat(output, "Waiting for other players to submit word");
         state = 3;
       }
       else if(state == 3){
@@ -216,14 +126,12 @@ class WikipediaGetter {
         lookup(query_string, message, 200);
         memset(output, 0, sizeof(output)); //resets the string 
         strcat(output, message);
-        //Serial.println(message);
         memset(query_string, 0, sizeof(query_string));
         state = 0;  
       }
     }
 };
-
-WikipediaGetter wg; //wikipedia object
+FibbageGetter fibbage; //wikipedia object
 Button button(BUTTON_PIN); //button object!
 
 
@@ -259,8 +167,8 @@ void setup() {
   tft.init();
   tft.setRotation(2);
   tft.setTextSize(1);
-  tft.fillScreen(TFT_BLACK);
-  tft.setTextColor(TFT_GREEN, TFT_BLACK); //set color of font to green foreground, black background
+  tft.fillScreen(TFT_WHITE);
+  tft.setTextColor(TFT_BLACK, TFT_WHITE); //set color of font to green foreground, black background
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   primary_timer = millis();
 }
@@ -269,10 +177,12 @@ void loop() {
   float x, y;
   get_angle(&x, &y); //get angle values
   int bv = button.update(); //get button value
-  wg.update(-y, bv, response); //input: angle and button, output String to display on this timestep
+  fibbage.update(-y, bv, response); //input: angle and button, output String to display on this timestep
   if (strcmp(response, old_response) != 0) {//only draw if changed!
-    tft.fillScreen(TFT_BLACK);
+    tft.fillScreen(TFT_WHITE);
     tft.setCursor(0, 0, 1);
+    tft.println("Input word below:");
+    tft.println("               ");
     tft.println(response);
   }
   memset(old_response, 0, sizeof(old_response));
