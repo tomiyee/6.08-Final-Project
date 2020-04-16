@@ -22,43 +22,30 @@ def request_handler(request):
     connection = conn.cursor()  # move cursor into database (allows us to execute commands)
 
     if request["method"] == "POST": #if it's a post request
-        user = request["form"]["user"] #name of newly posted item (the item we're adding to cart from post request)
-        room_code = request["form"]["room"] #total price of items added this time to our cart
-        score = request["form"]["score"]
-        word = request["form"]["word"]
+        user = request["form"]["user"] #user name of player
+        room_code = request["form"]["room"] #room code of player
+        score = request["form"]["score"] #current score of user
+        word = request["form"]["word"] #latest submitted word from the user
         
-        #create online table that stores our items in cart if it doesn't exist
-        connection.execute('''CREATE TABLE IF NOT EXISTS new_table (user text, roomcode integer, score integer, word user);''') # run a CREATE TABLE command  
+        #create online table that stores user names, their current score, and latest word if it doesn't exist
+        connection.execute('''CREATE TABLE IF NOT EXISTS new_table (user text, roomcode integer, score integer, word text);''') # run a CREATE TABLE command  
         
-        #insert into our table the new item name and it's price in total
+        #insert into our table updated user stats
         connection.execute('''INSERT into new_table VALUES (?,?,?,?);''', (user, room_code, score, word))
         
-        #retrieve all entries from table (all the past item inserts and their prices) for printing out the cart
+        #retrieve all entries from table 
         entries = connection.execute('''SELECT * FROM new_table;''').fetchall()
         
-        #if we want to insert items into cart instead of clearing cart
-        if word != "CLEAR":
-            to_display = "" #the string with current tally of items in cart we want to return to be printed on our lcd screen 
-            total_price = 0 #total price of all items in cart so far
-                for item_name, price in entries: #iterate through all items and their prices in our cart
-                    to_display += item_name #add name in string form of the item name
-                    to_display += " "*(14 - len(item_name)) #space between item name and it's price for display purposes to look uniform
-                    to_display += "$"
-                    formatted_price = round(price, 2) #round price to two decimal places
-                    to_display += str(formatted_price) + "\n" #add new line each time we move on to the next entry in our table
-                    total_price += price #add price of the current item to total price
-                    
-            to_display += "Total price:  $"
-            formatted_price = round(total_price, 2)
-            to_display += str(formatted_price)
-            
-            conn.commit() # commit commands
-            conn.close() # close connection to database
-            return to_display
-        else: #clear database if the command was to clear (checkout/reset cart)
-            connection.execute("DROP TABLE IF EXISTS new_table") #delete table to reset cart (if the table exists that is)
+        user_data = {}
+        for entry in entries: 
+            user_name = entry[0]
+            room_code = entry[1]
+            score = entry[2]
+            word = entry[3]
+            user_data[user_name] = (room_code, score, word)
+        
+        conn.commit() # commit commands
+        conn.close() # close connection to database
+        return user_data #returns a dictionary of user name and their room code, current score, and latest submitted word
 
-            conn.commit() #commit commands
-            conn.close() #close connection to database
-            return 'cleared database!' #for debugging purposes on the arduino Serial Monitor
 
