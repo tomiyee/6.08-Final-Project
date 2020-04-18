@@ -1,11 +1,12 @@
 
 // The server url
-const SERVER_URL = "http://608dev-2.net/sandbox/sc/theng/bluffalo.py";
+const SERVER_URL = "http://608dev-2.net/sandbox/sc/team033/bluffalo/server.py";
 // The ms delay between sending messages
 const DT = 1000;
-// This will hold the input element that
+// This will hold the HTML Room Code Input
 let roomCodeInput;
-
+// The string that the user entered as the Room Code
+let roomCode;
 // Makes sure that start() is called right away
 window.onload = start;
 
@@ -17,15 +18,8 @@ window.onload = start;
  */
 function start () {
   // Insert Start Code Here
-  roomCodeInput = document.getElementById("room-code-input");
-  // roomCodeInput.addEventListener ('keydown', inputKeyDownHandler);
+  roomCodeInput = $("#room-code-input");
   $('#room-code-input').keydown(inputKeyDownHandler);
-  
-  // $('.input-container').click(function () {
-  //   console.log("You clicked the input container")
-  // })
-
-
   $('.game-container').hide();
 
   // Sets the loop to be called every DT ms
@@ -39,8 +33,12 @@ function start () {
  */
 async function loop () {
   // 0. Do nothing if the user has not entered a room code
+
   // 1. Send a request to the server for game data
+  let resp = await sendHttpRequest("GET", SERVER_URL + "?action=in_lobby");
+
   // 2. Handle the response, displaying or hiding elements as necessary
+
 }
 
 
@@ -54,13 +52,11 @@ async function loop () {
 async function inputKeyDownHandler (e) {
   // If they pressed enter, clear the input
   if (e.keyCode == 13) {
-    // Clear the Input
-
     $(".input-container").hide();
     $('.game-container').show();
-    $('.room-code').text(roomCodeInput.value);
+    $('.room-code').text(roomCodeInput.val());
 
-    roomCodeInput.value = "";
+    roomCodeInput.val("");
     // Temporarily sends a response to this server.
     let response = await sendHttpRequest ("GET", "http://608dev-2.net/sandbox/sc/theng/lab08a/lab08a.py");
   }
