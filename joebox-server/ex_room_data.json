@@ -19,6 +19,7 @@
     "current_answer": "drone",
     "round_number": 2,
     "question_number": 3,
-    "selecting_options": true
+    "waiting_for_submissions": true,
+    "selecting_options": false
   }
 }
