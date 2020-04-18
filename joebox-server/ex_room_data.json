@@ -1,0 +1,24 @@
+{
+  "player_data": {
+    "Joe 1": {
+       "Score": 0,
+       "Submitted": false,
+       "Submission": null  // Same as None in Python
+    },
+    "Joe 2": {
+       "Score": 100,
+       "Submitted": true,
+       "Submission": "Help"
+    }
+  },
+
+  "game_data": {
+    "in_lobby": "False",
+    "current_word": "babble",
+    "current_meaning": "to ___ on and on",
+    "current_answer": "drone",
+    "round_number": 2,
+    "question_number": 3,
+    "selecting_options": true
+  }
+}
