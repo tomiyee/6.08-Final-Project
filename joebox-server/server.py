@@ -49,5 +49,10 @@ def initialize_game_db ():
     TO-DO - Initialize an SQL DB at the location bluffalo_db with 2 cols
     first col being room_code TEXT, and second being room_data TEXT
     """
+    conn = sqlite3.connect(visits_db)  # connect to that database (will create if it doesn't already exist)
+    connection = conn.cursor()  # move cursor into database (allows us to execute commands)
+    connection.execute('''CREATE TABLE IF NOT EXISTS current_games (room_code text, game_data text);''') # run a CREATE TABLE command
+    conn.commit() # commit commands
+    conn.close() # close connection to database
 
     pass
