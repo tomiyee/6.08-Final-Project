@@ -12,10 +12,12 @@ def submit_bluff (request):
       String bluff     - The text submission that the user entered on the ESP
 
     Returns an error code if failed to add: 
-        '1': if they already submitted a bluff this round
-        '2': game in lobby, can't submit bluffs right now
-        '3': game not waiting for submissions, can't submit bluff right now
-        '-1': unknown error, don't know what happened
+    -1: unknown error, don't know what happened
+    1: if they already submitted a bluff this round
+    2: game in lobby, can't submit bluffs right now
+    3: game not waiting for submissions, can't submit bluff right now
+    8: player doesn't exist in game
+    9: one of the required parameters for post request is missing
     Returns number of people who haven't submitted bluff yet if successfully added
     see number of people who haven't submitted a bluff yet in Postman
     """
@@ -23,9 +25,15 @@ def submit_bluff (request):
     connection = conn.cursor() 
     
     #data from request: room code, player user name, and their bluff submitted
-    room_code = request['form']['roomcode']
-    user = request['form']['user_name'] 
-    bluff_submitted = request['form']['bluff'] # text submission user entered on ESP
+    
+    try: 
+        room_code = request['form']['roomcode']
+        user = request['form']['user_name'] 
+        bluff_submitted = request['form']['bluff'] # text submission user entered on ESP
+    except: 
+        conn.commit() # commit commands
+        conn.close() # close connection to database
+        return '9' #one of the required parameters are missing
     
 #    connection.execute('''CREATE TABLE IF NOT EXISTS game_table (roomcode text, current_games text);''')
     try: 
@@ -35,6 +43,8 @@ def submit_bluff (request):
         # json load: turns json file into python dictionary
         room = json.load(room_json)
         
+        if user not in room['player_data']: 
+            return '8' #player doesn't exist in game
         if room['player_data'][user]["submitted"]:
             conn.commit() # commit commands
             conn.close() # close connection to database
