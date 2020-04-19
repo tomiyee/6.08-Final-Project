@@ -16,6 +16,7 @@ def submit_bluff (request):
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor() 
     
+    #data from request: room code, player user name, and their bluff submitted
     room_code = request['form']['roomcode']
     user = request['form']['user_name'] 
     bluff_submitted = request['form']['bluff'] # text submission user entered on ESP
@@ -27,11 +28,11 @@ def submit_bluff (request):
         
         # json load: turns json file into python dictionary
         room = json.load(room_json)
-        room['player_data'][user].submitted = True
-        room['player_data'][user].submission = bluff_submitted
+        room['player_data'][user]["submitted"] = True
+        room['player_data'][user]["submission"] = bluff_submitted
         
         all_players_submitted = True
-        for players in room['player_data']: 
+        for player in room['player_data']: 
             if player['submitted'] == False: 
                 all_players_submitted = False
                 break
@@ -48,4 +49,6 @@ def submit_bluff (request):
         return 'Success' #if successfully added
     except: 
         return 'None'
+
+    #test using post request in postman: put all content under post body
     
