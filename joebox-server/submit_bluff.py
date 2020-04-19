@@ -11,7 +11,9 @@ def submit_bluff (request):
       String user      - The name of the player entered on ESP
       String bluff     - The text submission that the user entered on the ESP
 
-    Returns String "Success" if successfully added, String "None" if failed to add
+    Returns String "None" if failed to add
+    Returns number of people who haven't submitted bluff yet if successfully added
+    see number of people who haven't submitted a bluff yet in Postman
     """
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor() 
@@ -32,10 +34,11 @@ def submit_bluff (request):
         room['player_data'][user]["submission"] = bluff_submitted
         
         all_players_submitted = True
+        num_no_submission = 0 #players who haven't submitted yet
         for player in room['player_data']: 
             if player['submitted'] == False: 
                 all_players_submitted = False
-                break
+                num_no_submission += 1
             
         if all_players_submitted: #if all players submitted
             room['game_data']['waiting_for_submissions'] = False
@@ -46,8 +49,8 @@ def submit_bluff (request):
         
         #update SQL with updated json room data
         connection.execute('''UPDATE game_table SET Player_and_Room_data =? WHERE roomcode =?;''', (new_room_json, room_code))
-        return 'Success' #if successfully added
-    except: 
+        return num_no_submission #if successfully added
+    except: #if not successfully added
         return 'None'
 
     #test using post request in postman: put all content under post body
