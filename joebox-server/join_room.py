@@ -12,19 +12,26 @@ def join_room (request):
 
     Returns a string, representing all usernames separated by ","
     Error codes: 
-    6: room does not exist
-    7: there is more than one room with this room code
+    -1: unknown error
     4: username already exists
     5: game not in lobby: can't join right now
-    -1: unknown error
+    6: room does not exist
+    7: there is more than one room with this room code
+    9: one of the required parameters for post request is missing
+
     """
 
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor() 
     
     #data from request: room code, player user name, and their bluff submitted
-    room_code = request['form']['roomcode']
-    user = request['form']['username'] 
+    try: 
+        room_code = request['form']['roomcode']
+        user = request['form']['username'] 
+    except: 
+        conn.commit()
+        conn.close()
+        return '9' #one of the parameters in POST missing 
     
     try:
         rooms_json = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,))[0][0]
