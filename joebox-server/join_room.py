@@ -39,8 +39,19 @@ def join_room (request):
     
     players = [player for player in room['player_data']]
     
-    return str(players) #string representing all usernames separated by ","
+    out = ''
+    for player in players: 
+        out += player
+        out += ','
+        
+    return out #string representing all usernames separated by ","
+    #example: jimmy,karen,michelle,
 
-  
+#players = ['karen', 'michelle']
+#out = ''
+#for player in players: 
+#    out += player
+#    out += ','
+#print(out)
     
 
