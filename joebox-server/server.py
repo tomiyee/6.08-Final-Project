@@ -49,10 +49,37 @@ def initialize_game_db ():
     TO-DO - Initialize an SQL DB at the location bluffalo_db with 2 cols
     first col being room_code TEXT, and second being room_data TEXT
     """
-    conn = sqlite3.connect(visits_db)  # connect to that database (will create if it doesn't already exist)
+    conn = sqlite3.connect('./joebox-server/game_data.db')  # connect to that database (will create if it doesn't already exist)
+
+
     connection = conn.cursor()  # move cursor into database (allows us to execute commands)
-    connection.execute('''CREATE TABLE IF NOT EXISTS current_games (room_code text, game_data text);''') # run a CREATE TABLE command
+    connection.execute('''INSERT into game_table VALUES (?,?);''', ("ABCD", '''{
+      "player_data": {
+        "Joe 1": {
+           "Score": 0,
+           "Submitted": false,
+           "Submission": null
+        },
+        "Joe 2": {
+           "Score": 100,
+           "Submitted": true,
+           "Submission": "Help"
+        }
+      },
+
+      "game_data": {
+        "in_lobby": "False",
+        "current_word": "babble",
+        "current_meaning": "to ___ on and on",
+        "current_answer": "drone",
+        "round_number": 2,
+        "question_number": 3,
+        "waiting_for_submissions": true,
+        "selecting_options": false
+      }
+    }
+    '''))
+    connection.execute('''CREATE TABLE IF NOT EXISTS game_table (room_code text, game_data text);''') # run a CREATE TABLE command
     conn.commit() # commit commands
     conn.close() # close connection to database
-
     pass
