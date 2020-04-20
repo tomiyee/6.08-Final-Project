@@ -35,6 +35,8 @@ def request_handler (request) :
         # Determines which action the http request wants done
         action = request['form']['action']
         # Selects the correct handler for the action
+        if action == "initialize_game_db":
+            return initialize_game_db()
         if action == "join_room":
             return join_room(request)
         if action == "start_game":
@@ -46,13 +48,12 @@ def request_handler (request) :
 
 def initialize_game_db ():
     """
-    TO-DO - Initialize an SQL DB at the location bluffalo_db with 2 cols
+    Initialize an SQL DB at the location bluffalo_db with 2 cols
     first col being room_code TEXT, and second being room_data TEXT
     """
-    conn = sqlite3.connect('./joebox-server/game_data.db')  # connect to that database (will create if it doesn't already exist)
-
-
+    conn = sqlite3.connect('__HOME__/bluffalo/game_data.db')  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor()  # move cursor into database (allows us to execute commands)
+    connection.execute('''CREATE TABLE IF NOT EXISTS game_table (room_code text, game_data text);''') # run a CREATE TABLE command
     connection.execute('''INSERT into game_table VALUES (?,?);''', ("ABCD", '''{
       "player_data": {
         "Joe 1": {
@@ -79,7 +80,6 @@ def initialize_game_db ():
       }
     }
     '''))
-    connection.execute('''CREATE TABLE IF NOT EXISTS game_table (room_code text, game_data text);''') # run a CREATE TABLE command
     conn.commit() # commit commands
     conn.close() # close connection to database
-    pass
+    return "Created the db with one sample game"
