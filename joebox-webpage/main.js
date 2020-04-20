@@ -1,6 +1,6 @@
 
 // The server url
-const SERVER_URL = "http://608dev-2.net/sandbox/sc/team033/bluffalo/server.py";
+const SERVER_URL = "https://608dev-2.net/sandbox/sc/team033/bluffalo/server.py";
 // The ms delay between sending messages
 const DT = 1000;
 // This will hold the HTML Room Code Input
