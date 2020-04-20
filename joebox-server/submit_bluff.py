@@ -13,16 +13,17 @@ def submit_bluff (request):
 
     Returns an error code if failed to add:
     -1: unknown error, don't know what happened
-    1: if they already submitted a bluff this round
-    2: game in lobby, can't submit bluffs right now
+    1: one of the required parameters for post request is missing
+    2: room doesn't exist
     3: game not waiting for submissions, can't submit bluff right now
+    9: if they already submitted a bluff this round
+    6: game in lobby, can't submit bluffs right now
     8: player doesn't exist in game
-    9: one of the required parameters for post request is missing
+    
     Returns number of people who haven't submitted bluff yet if successfully added
     see number of people who haven't submitted a bluff yet in Postman
     """
-    conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
-    connection = conn.cursor()
+
 
     #data from request: room code, player user name, and their bluff submitted
 
@@ -31,16 +32,25 @@ def submit_bluff (request):
         user = request['form']['user_name']
         bluff_submitted = request['form']['bluff'] # text submission user entered on ESP
     except:
-        conn.commit() # commit commands
-        conn.close() # close connection to database
         return '9' #one of the required parameters are missing
 
+    conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
+    connection = conn.cursor()
     try: 
-        room_json = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,))[0][0]
+        room_rows = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,))[0][0]
         # Fetch the JSON String from the SQL with the right room code
+        if len(room_rows) == 0:
+            conn.commit() # commit commands
+            conn.close() # close connection to database
+            return '6' #room does not exist yet
+
+        if len(room_rows) > 1:
+            conn.commit() # commit commands
+            conn.close() # close connection to database
+            return '7' #there are more than one room with this room code
 
         # json load: turns json file into python dictionary
-        room = json.load(room_json)
+        room = json.load(room_rows)
 
         if user not in room['player_data']:
             return '8' #player doesn't exist in game
