@@ -10,6 +10,35 @@
   Return value:
      boolean: True if character appended, False if not appended (indicating buffer full)
 */
+
+void printMenu(int choice){
+  tft.fillRect(3,40,10,10,TFT_WHITE);
+  tft.fillRect(3,60,10,10,TFT_WHITE);
+  if (choice == 0){
+    tft.setCursor(3,40);
+    tft.print("->");
+    tft.print("Create Room");
+    tft.setCursor(3,60);
+    tft.print("  ");
+    tft.print("Join Room");
+  }
+  else{
+    tft.setCursor(3,40);
+    tft.print("  ");
+    tft.print("Create Room");
+    tft.setCursor(3,60);
+    tft.print("->");
+    tft.print("Join Room");
+  }
+
+  tft.setCursor(3,80);
+  tft.println("1: Scroll");
+  tft.setCursor(3,90);
+  tft.println("2: Select");
+}
+
+
+
 uint8_t char_append(char* buff, char c, uint16_t buff_size) {
   int len = strlen(buff);
   if (len > buff_size) return false;
