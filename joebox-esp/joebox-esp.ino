@@ -9,20 +9,38 @@
 TFT_eSPI tft = TFT_eSPI();
 const int SCREEN_HEIGHT = 160;
 const int SCREEN_WIDTH = 128;
-const int BUTTON_PIN = 5;
+const int BUTTON_PIN1 = 16;
+const int BUTTON_PIN2 = 5;
 const int LOOP_PERIOD = 40;
 
 MPU6050 imu; //imu object called, appropriately, imu
 
 
-char network[] = "NetGear_GMCK4"; 
-char password[] = "gqym1024"; 
+char network[] = "ATT8CkJ3vp"; 
+char password[] = "9#sj4c%i7nbm"; 
+
+char user[] = "GADNUK!";
+
+#define START 0
+#define MAIN 1
+#define LOBBYHOST 2
+#define JOIN 3
+#define LOBBYGUEST 4
+#define GAME 5
+#define CREATE 6
+
+int stateMain = 0;
+int choiceMain = 0;
+
 
 //Some constants and some resources:
 const int RESPONSE_TIMEOUT = 6000; //ms to wait for response from host
 const uint16_t OUT_BUFFER_SIZE = 1000; //size of buffer to hold HTTP response
 char old_response[OUT_BUFFER_SIZE]; //char array buffer to hold HTTP request
 char response[OUT_BUFFER_SIZE]; //char array buffer to hold HTTP request
+
+char roomKey[100] = {0};      //These two variables are used to input the room key during room selection
+char prevRoomKey[100] = {0};
 
 unsigned long primary_timer;
 
@@ -59,19 +77,24 @@ class FibbageGetter {
     FibbageGetter() {
       state = 0;
       memset(message, 0, sizeof(message));
-      strcat(message, "Long Press to Start!");
+      strcat(message, "Long Press 1 to Start!");
       char_index = 0;
       scrolling_timer = millis();
     }
     void update(float angle, int button, char* output) {
+      //Serial.print(state);
       char holder[20] = {0};
       if(state == 0){
+        Serial.println(stateMain);
         memset(output, 0, sizeof(output));
+        Serial.println(stateMain);
         strcat(output, message);
+        Serial.println(stateMain);
         if(button==2){ //long press
           scrolling_timer = millis();
           state = 1;
         }
+        Serial.println(stateMain);
       }
       else if(state == 1){
         memset(output, 0, sizeof(output));
@@ -132,7 +155,9 @@ class FibbageGetter {
     }
 };
 FibbageGetter fibbage; //wikipedia object
-Button button(BUTTON_PIN); //button object!
+FibbageGetter roomInputer;
+Button button1(BUTTON_PIN1); //button object!
+Button button2(BUTTON_PIN2); 
 
 
 void setup() {
@@ -169,24 +194,149 @@ void setup() {
   tft.setTextSize(1);
   tft.fillScreen(TFT_WHITE);
   tft.setTextColor(TFT_BLACK, TFT_WHITE); //set color of font to green foreground, black background
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_PIN1, INPUT_PULLUP);
+  pinMode(BUTTON_PIN2, INPUT_PULLUP);
   primary_timer = millis();
+  printStartScreen();
+  stateMain = START;
 }
 
 void loop() {
+  //Serial.println(stateMain);
   float x, y;
   get_angle(&x, &y); //get angle values
-  int bv = button.update(); //get button value
-  fibbage.update(-y, bv, response); //input: angle and button, output String to display on this timestep
-  if (strcmp(response, old_response) != 0) {//only draw if changed!
-    tft.fillScreen(TFT_WHITE);
-    tft.setCursor(0, 0, 1);
-    tft.println("Input word below:");
-    tft.println("               ");
-    tft.println(response);
+  int flag1 = button1.update(); //get button value
+  int flag2 = button2.update();
+  if (stateMain == MAIN){
+    if (flag1 == 1){
+      choiceMain = (choiceMain+1) % 2;
+      printMenu(choiceMain);
+    }
+
+    else if (flag2 == 1){
+      if (choiceMain == 0){
+        stateMain = CREATE;
+
+        tft.setCursor(3,3);
+        tft.print("Fetching room key...");
+      }
+      else{
+        stateMain = JOIN;
+        tft.fillScreen(TFT_WHITE);
+        tft.setTextSize(2);
+        tft.setCursor(5,3);
+        tft.println("Input Key:");
+        tft.setTextSize(1);
+        tft.setCursor (3,30);
+        tft.setCursor(3,80);
+        tft.println("1: Select");
+        tft.setCursor(3,90);
+        tft.println("2: Delete");
+      }
+    }
   }
-  memset(old_response, 0, sizeof(old_response));
-  strcat(old_response, response);
-  while (millis() - primary_timer < LOOP_PERIOD); //wait for primary timer to increment
-  primary_timer = millis();
+  
+  else if (stateMain == START){
+    if (flag2 == 1 || flag1 == 1){
+      stateMain = MAIN;
+      tft.fillScreen(TFT_WHITE);
+      tft.setTextSize(2);
+      tft.setCursor(10,3);
+      tft.println("Main Menu");
+      tft.setTextSize(1);
+      printMenu(choiceMain);
+    }
+  }
+  else if (stateMain == CREATE){
+    tft.fillScreen(TFT_WHITE);
+    //PLACEHOLDER: WILL GET ROOM KEY FROM SERVER ONCE THE API HAS BEEN CREATED
+    memset(roomKey,0,sizeof(roomKey));
+    strcat(roomKey,"WXYZ");
+    stateMain = LOBBYHOST;
+    tft.setCursor(35,3);
+    tft.setTextSize(2);
+    tft.print(roomKey);
+    tft.setTextSize(1);
+    tft.setCursor(3,30);
+    tft.print("1: ");
+    tft.println(user);
+  }
+  else if (stateMain == JOIN){
+    if (strlen(roomKey) == 5){
+      tft.fillScreen(TFT_WHITE);
+      stateMain = LOBBYGUEST;
+      tft.setCursor(35,3);
+      tft.setTextSize(2);
+      tft.print(roomKey);
+      tft.setTextSize(1);
+      tft.setCursor(3,30);
+    }
+    else if (flag2 == 1){
+      memset(roomKey+(strlen(roomKey)-1),0,1);
+      if (strcmp(roomKey,prevRoomKey)){
+        tft.fillRect(0,50,128,20,TFT_WHITE);
+        tft.setTextSize(2);
+        tft.setCursor(30,50);
+        tft.print(roomKey);
+      }
+      memset(prevRoomKey,0,sizeof(prevRoomKey));
+      strcat(prevRoomKey,roomKey);
+      while (millis() - primary_timer < LOOP_PERIOD); //wait for primary timer to increment
+      primary_timer = millis();
+    }  
+    roomInputer.update(-y,flag1,roomKey);
+    if (strcmp(roomKey,prevRoomKey) != 0){
+      tft.fillRect(0,50,128,20,TFT_WHITE);
+      if (strcmp(roomKey,"Long Press 1 to Start!") != 0){
+        tft.setTextSize(2);
+        tft.setCursor(30,50);
+      }
+      else{
+        tft.setTextSize(1);
+        tft.setCursor(3,50);
+      }
+      
+      tft.print(roomKey);
+      tft.setTextSize(1);
+    }
+    
+    memset(prevRoomKey,0,sizeof(prevRoomKey));
+    strcat(prevRoomKey,roomKey);
+    while (millis() - primary_timer < LOOP_PERIOD); //wait for primary timer to increment
+    primary_timer = millis();
+  }
+
+  
+  else if (stateMain == LOBBYHOST){
+
+    //ADD MORE FUNCTIONALITY! PRINTING NEW JOINING USERS:
+
+    
+  }
+  else if (stateMain == LOBBYGUEST){
+    
+    
+  }
+  else if (stateMain == GAME){
+    
+  }
+
+
+
+
+
+      //will use later, not yet doe.
+  
+//  fibbage.update(-y, flag2, response); //input: angle and button, output String to display on this timestep
+//  if (strcmp(response, old_response) != 0) {//only draw if changed!
+//    tft.fillScreen(TFT_WHITE);
+//    tft.setCursor(0, 0, 1);
+//    tft.println("Input word below:");
+//    tft.println("               ");
+//    tft.println(response);
+//  }
+//  memset(old_response, 0, sizeof(old_response));
+//  strcat(old_response, response);
+//  while (millis() - primary_timer < LOOP_PERIOD); //wait for primary timer to increment
+//  primary_timer = millis();
 }

@@ -15,6 +15,8 @@ void printStartScreen(){
   drawDetails();
   drawOutline();
   drawBody();
+  tft.setCursor(22,140);
+  tft.println("Press to start");
 }
 
 
@@ -46,6 +48,9 @@ void printScoreScreen(int numPlayers,int* scores,char users[][20]){
     tft.drawRect(0,ypos,len,20,colors[i%6]);
     tft.fillRect(0,ypos,len,20,colors[i%6]);
   }
+
+
+  
 
 }
 
