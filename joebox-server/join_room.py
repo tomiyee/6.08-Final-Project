@@ -21,15 +21,17 @@ def join_room (request):
     9: one of the required parameters for post request is missing
     """
 
-    # data from request: room code, player user name, and their bluff submitted
-    # one of the parameters in POST missing
-    if 'room_code' not in request['form']:
-        return "Missing Room Code"
-    if 'user' not in reqest['form'];
-        return "Missing Username"
-
     room_code = request['form']['room_code']
     user = request['form']['user']
+
+    # data from request: room code, player user name, and their bluff submitted
+    # one of the parameters in POST missing
+    if room_code not in request['form']:
+        return "Missing Room Code"
+    if user not in request['form'];
+        return "Missing Username"
+
+
 
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor()
