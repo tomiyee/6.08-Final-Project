@@ -26,7 +26,7 @@ def join_room (request):
     # one of the parameters in POST missing
     if 'room_code' not in request['form']:
         return "Missing Room Code"
-    if 'user' not in request['form'];
+    if 'user' not in request['form']:
         return "Missing Username"
 
 
