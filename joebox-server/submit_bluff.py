@@ -54,7 +54,7 @@ def submit_bluff (request):
 
     if user not in room['player_data']:
         return "player doesn't exist in game yet"
-    if room['player_data'][user]["submitted"]:
+    if room['player_data'][user]["submitted"] == True:
         conn.commit() # commit commands
         conn.close() # close connection to database
         return 'Player already submitted a bluff this round'
