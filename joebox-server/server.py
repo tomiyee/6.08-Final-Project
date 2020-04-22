@@ -72,9 +72,9 @@ def initialize_game_db ():
 
           "game_data": {
             "in_lobby": "False",
-            "current_word": "babble",
-            "current_meaning": "to ___ on and on",
-            "current_answer": "drone",
+            "current_word": "acinaceous",
+            "current_meaning": "full of _____",
+            "current_answer": "kernels",
             "round_number": 2,
             "question_number": 3,
             "waiting_for_submissions": true,
