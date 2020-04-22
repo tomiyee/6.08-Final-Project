@@ -34,4 +34,24 @@ body {
   padding:0;
   margin:0;
   background: #141414;
+  font-family: montserrat;
+    
+}
+
+.error-room {
+    color:red;
+  font-size: 20px;
+  font-weight:bold;
+    padding: 30px;
+}
+
+div {
+    color:white;
+}
+
+.button-room-input {
+  font-size: 20px;
+  font-weight:bold;
+    font-family: montserrat;
+    margin-top: 20px;
 }

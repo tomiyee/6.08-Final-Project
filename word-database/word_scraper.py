@@ -33,15 +33,6 @@ for letter in "abcdefghijklmnopqrstuvwxyz":
     with open("{}/{}_words.txt".format(raw_dictionary_directory, letter), "w", encoding='utf-8') as out:
         out.write(output)
     print("done with words starting with {}".format(letter))
-##
-##with open(full_dict_file, "w", encoding='utf-8') as out:
-##    for file in os.listdir(raw_dictionary_directory):
-##        with open("{}/{}".format(raw_dictionary_directory, file), 'r', encoding='utf-8') as sub:
-##            for line in sub:
-##                out.write(line)
-##
-##print('done concatenating all words into one dictionary')
 
 i = 'bash -c "cat {}/*.txt > {}"'.format(raw_dictionary_directory, full_dict_file)
-x = os.system(i)
-print(x)
+os.system(i)
