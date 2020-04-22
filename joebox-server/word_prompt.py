@@ -21,7 +21,7 @@ def current_prompt (request):
     connection = conn.cursor()
 
     try:
-        room_json_string = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?''', (room_code,))[0]
+        room_json_string = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?''', (room_code,)).fetchall()[0]
     except:
         conn.commit()
         conn.close()
