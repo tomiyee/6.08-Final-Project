@@ -21,6 +21,7 @@ function start () {
   roomCodeInput = $("#room-code-input");
   $('#room-code-input').keydown(inputKeyDownHandler);
   $('.game-container').hide();
+    $('.error-room').hide();
 
   // Sets the loop to be called every DT ms
   setInterval (loop, DT);
@@ -52,14 +53,28 @@ async function loop () {
 async function inputKeyDownHandler (e) {
   // If they pressed enter, clear the input
   if (e.keyCode == 13) {
-    $(".input-container").hide();
-    $('.game-container').show();
-    $('.room-code').text(roomCodeInput.val());
+      enterRoomCode();
+  }
+}
+
+async function enterRoomCode () {
+    let response = await sendHttpRequest ("GET", SERVER_URL+"?action=room_code_check&room_code="+roomCodeInput.val());
+    
+    if (response == "true") {
+        $(".input-container").hide();
+        $('.game-container').show();
+        $('.room-code').text(roomCodeInput.val());
+    }
+    
+    else {
+        $('.error-room').show();
+    }
+    
+
 
     roomCodeInput.val("");
     // Temporarily sends a response to this server.
-    let response = await sendHttpRequest ("GET", "http://608dev-2.net/sandbox/sc/theng/lab08a/lab08a.py");
-  }
+    
 }
 
 
