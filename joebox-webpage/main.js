@@ -22,6 +22,7 @@ function start () {
   $('#room-code-input').keydown(inputKeyDownHandler);
   $('.game-container').hide();
     $('.error-room').hide();
+    $('.button-room-input').click(inputButtonPressHandler);
 
   // Sets the loop to be called every DT ms
   setInterval (loop, DT);
@@ -57,16 +58,21 @@ async function inputKeyDownHandler (e) {
   }
 }
 
+async function inputButtonPressHandler () {
+    enterRoomCode();
+}
+
 async function enterRoomCode () {
 
     // Sends the HTTP request to check if the room code exists
     let response = await sendHttpRequest (
       "GET",
       SERVER_URL+"?action=room_code_check&room_code="+roomCodeInput.val());
-      
+
     // If the response is "true", proceed
     if (response.trim() == "true") {
         $(".input-container").hide();
+        $(".button-room-input").hide();
         $('.game-container').show();
         $('.room-code').text(roomCodeInput.val());
     }
