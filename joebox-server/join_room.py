@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import os
 
 bluffalo_db = os.path.dirname(__file__) + '/game_data.db'
 # Note json.load(String) and json.dumps(Objects)
@@ -18,10 +19,7 @@ def join_room (request):
     5: game not in lobby: can't join right now
     7: there is more than one room with this room code
     9: one of the required parameters for post request is missing
-
     """
-
-
 
     #data from request: room code, player user name, and their bluff submitted
     try:
