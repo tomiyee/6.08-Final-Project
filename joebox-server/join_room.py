@@ -38,10 +38,10 @@ def join_room (request):
             conn.close() # close connection to database
             return 'room does not exist yet'
 
-        if len(rooms_json) > 1:
-            conn.commit() # commit commands
-            conn.close() # close connection to database
-            return 'there are more than one room with this room code'
+        # if len(rooms_json) > 1:
+        #     conn.commit() # commit commands
+        #     conn.close() # close connection to database
+        #     return 'there are more than one room with this room code'
         # json load: turns json file into python dictionary
         room = json.load(rooms_json[0][0])
 
