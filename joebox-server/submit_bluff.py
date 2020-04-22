@@ -1,7 +1,7 @@
 import json
 import sqlite3
 
-bluffalo_db = '__HOME__/bluffalo/game_data.db'
+bluffalo_db = os.path.dirname(__file__) + '/game_data.db'
 # Note json.load(String) and json.dumps(Objects)
 
 def submit_bluff (request):
@@ -19,7 +19,7 @@ def submit_bluff (request):
     9: if they already submitted a bluff this round
     6: game in lobby, can't submit bluffs right now
     8: player doesn't exist in game
-    
+
     Returns number of people who haven't submitted bluff yet if successfully added
     see number of people who haven't submitted a bluff yet in Postman
     """
@@ -36,7 +36,7 @@ def submit_bluff (request):
 
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor()
-    try: 
+    try:
         room_rows = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,))[0][0]
         # Fetch the JSON String from the SQL with the right room code
         if len(room_rows) == 0:

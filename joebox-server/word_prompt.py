@@ -1,7 +1,7 @@
 import json
 import sqlite3
 
-bluffalo_db = '__HOME__/bluffalo/game_data.db'
+bluffalo_db = os.path.dirname(__file__) + '/game_data.db'
 # Note json.load(String) and json.dumps(Objects)
 
 def current_prompt (request):

@@ -1,7 +1,7 @@
 import json
 import sqlite3
 
-bluffalo_db = '__HOME__/bluffalo/game_data.db'
+bluffalo_db = os.path.dirname(__file__) + '/game_data.db'
 # Note json.load(String) and json.dumps(Objects)
 
 def join_room (request):
@@ -29,7 +29,7 @@ def join_room (request):
         user = request['form']['username']
     except:
         return '9' #one of the parameters in POST missing
-    
+
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor()
     try:
