@@ -38,11 +38,11 @@ def join_room (request):
             conn.close() # close connection to database
             return '2' #room does not exist yet
 
-        if len(rooms_json) > 1:
-            conn.commit() # commit commands
-            conn.close() # close connection to database
-            return '7' #there are more than one room with this room code
-        # json load: turns json file into python dictionary
+        # if len(rooms_json) > 1:
+        #     conn.commit() # commit commands
+        #     conn.close() # close connection to database
+        #     return '7' #there are more than one room with this room code
+        # # json load: turns json file into python dictionary
         room = json.load(rooms_json[0][0])
 
         if user in room['player_data']:
