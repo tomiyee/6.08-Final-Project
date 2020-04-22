@@ -76,7 +76,7 @@ def submit_bluff (request):
     all_players_submitted = True
     num_no_submission = 0 #players who haven't submitted yet
     for player in room['player_data']:
-        if not player['submitted']:
+        if not room['player_data'][player]['submitted']: #code ran up to here
             all_players_submitted = False
             num_no_submission += 1
 
