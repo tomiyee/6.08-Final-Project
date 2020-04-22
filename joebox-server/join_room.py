@@ -1,8 +1,9 @@
 import json
 import sqlite3
+import os
 
-bluffalo_db = '__HOME__/bluffalo/game_data.db'
-# Note json.load(String) and json.dumps(Objects)
+bluffalo_db = os.path.dirname(__file__) + '/game_data.db'
+# Note json.loads(String) and json.dumps(Objects)
 
 def join_room (request):
     """
@@ -18,10 +19,7 @@ def join_room (request):
     5: game not in lobby: can't join right now
     7: there is more than one room with this room code
     9: one of the required parameters for post request is missing
-
     """
-
-
 
     #data from request: room code, player user name, and their bluff submitted
     try:
@@ -29,11 +27,11 @@ def join_room (request):
         user = request['form']['username']
     except:
         return '9' #one of the parameters in POST missing
-    
+
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor()
     try:
-        rooms_json = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,))[0][0]
+        rooms_json = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,)).fetchall()[0][0]
         # Fetch the JSON String from the SQL with the right room code
         if len(rooms_json) == 0:
             conn.commit() # commit commands

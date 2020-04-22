@@ -54,31 +54,33 @@ def initialize_game_db ():
     conn = sqlite3.connect('__HOME__/bluffalo/game_data.db')  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor()  # move cursor into database (allows us to execute commands)
     connection.execute('''CREATE TABLE IF NOT EXISTS game_table (room_code text, game_data text);''') # run a CREATE TABLE command
-    connection.execute('''INSERT into game_table VALUES (?,?);''', ("ABCD", '''{
-      "player_data": {
-        "Joe 1": {
-           "Score": 0,
-           "Submitted": false,
-           "Submission": null
-        },
-        "Joe 2": {
-           "Score": 100,
-           "Submitted": true,
-           "Submission": "Help"
-        }
-      },
+    connection.execute('''INSERT into game_table VALUES (?,?);''', (
+        "ABCD", '''
+        {
+          "player_data": {
+            "Joe 1": {
+               "score": 0,
+               "submitted": false,
+               "submission": null
+            },
+            "Joe 2": {
+               "score": 100,
+               "submitted": true,
+               "submission": "Help"
+            }
+          },
 
-      "game_data": {
-        "in_lobby": "False",
-        "current_word": "babble",
-        "current_meaning": "to ___ on and on",
-        "current_answer": "drone",
-        "round_number": 2,
-        "question_number": 3,
-        "waiting_for_submissions": true,
-        "selecting_options": false
-      }
-    }
+          "game_data": {
+            "in_lobby": false,
+            "current_word": "acinaceous",
+            "current_meaning": "full of _____",
+            "current_answer": "kernels",
+            "round_number": 2,
+            "question_number": 3,
+            "waiting_for_submissions": true,
+            "selecting_options": false
+          }
+        }
     '''))
     conn.commit() # commit commands
     conn.close() # close connection to database
