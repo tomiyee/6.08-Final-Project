@@ -91,6 +91,6 @@ def submit_bluff (request):
     connection.execute('''UPDATE game_table SET game_data =? WHERE room_code =?;''', (new_room_json, room_code)).fetchall()
     conn.commit() # commit commands
     conn.close() # close connection to database
-    return num_no_submission #if successfully added
+    return 'There are ' + str(num_no_submission) +  ' player(s) who have not submitted a bluff this round' #if successfully added
 
     #test using post request in postman: put all content under post body
