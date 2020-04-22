@@ -33,7 +33,7 @@ def submit_bluff (request):
         user = request['form']['user']
         bluff_submitted = request['form']['bluff'] # text submission user entered on ESP
     except:
-        return '1' #one of the required parameters are missing
+        return 'one of the required parameters are missing'
 
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor()
@@ -42,32 +42,32 @@ def submit_bluff (request):
     if len(room_rows) == 0:
         conn.commit() # commit commands
         conn.close() # close connection to database
-        return '6' #room does not exist yet
+        return "room does not exist yet" #room does not exist yet
 
     if len(room_rows) > 1:
         conn.commit() # commit commands
         conn.close() # close connection to database
-        return '7' #there are more than one room with this room code
+        return "There are more than one room with this code"
 
     # json load: turns json file into python dictionary
     room = json.loads(room_rows[0][0])
 
     if user not in room['player_data']:
-        return '8' #player doesn't exist in game
+        return "player doesn't exist in game yet"
     if room['player_data'][user]["submitted"]:
         conn.commit() # commit commands
         conn.close() # close connection to database
-        return '1'  #Player already submitted a bluff this round
+        return 'Player already submitted a bluff this round'
 
     if room['game_data']['in_lobby']:
         conn.commit() # commit commands
         conn.close() # close connection to database
-        return '2' #in lobby right now, can't submit bluffs
+        return "in lobby right now, can't submit bluffs"
 
     if not room['game_data']['waiting_for_submissions']:
         conn.commit() # commit commands
         conn.close() # close connection to database
-        return '3' #not waiting for submissions, can't submit bluffs right now
+        return "not waiting for submissions, can't submit bluffs right now"
 
 
     room['player_data'][user]["submitted"] = True
@@ -88,7 +88,7 @@ def submit_bluff (request):
     new_room_json = json.dumps(room)
 
     #update SQL with updated json room data
-    connection.execute('''UPDATE game_table SET game_data =? WHERE room_code =?;''', (new_room_json, room_code))
+    connection.execute('''UPDATE game_table SET game_data =? WHERE room_code =?;''', (new_room_json, room_code)).fetchall()
     conn.commit() # commit commands
     conn.close() # close connection to database
     return num_no_submission #if successfully added
