@@ -54,10 +54,12 @@ def submit_bluff (request):
 
     if user not in room['player_data']:
         return "player doesn't exist in game yet"
-    if room['player_data'][user]["submitted"]:
+    if room['player_data'][user]["submitted"] == True:
         conn.commit() # commit commands
         conn.close() # close connection to database
-        return 'Player already submitted a bluff this round'
+        print(room)
+        return room
+        # return 'Player already submitted a bluff this round'
 
     if room['game_data']['in_lobby']:
         conn.commit() # commit commands
@@ -91,6 +93,6 @@ def submit_bluff (request):
     connection.execute('''UPDATE game_table SET game_data =? WHERE room_code =?;''', (new_room_json, room_code)).fetchall()
     conn.commit() # commit commands
     conn.close() # close connection to database
-    return num_no_submission #if successfully added
+    return 'There are ' + str(num_no_submission) +  ' player(s) who have not submitted a bluff this round' #if successfully added
 
     #test using post request in postman: put all content under post body
