@@ -31,36 +31,49 @@ def join_room (request):
 
 
 
-    conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
+    # connect to that database (will create if it doesn't already exist)
+    conn = sqlite3.connect(bluffalo_db)
     connection = conn.cursor()
+<<<<<<< HEAD
     room_code = request['form']['room_code']
     user = request['form']['user']
     
     rooms_json = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,)).fetchall()
+=======
+
+>>>>>>> b43b1a3bc657e880ebcd62a89694292e734b067a
     # Fetch the JSON String from the SQL with the right room code
+    rooms_json = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,)).fetchall()
+
+    # room does not exist yet
     if len(rooms_json) == 0:
         conn.commit() # commit commands
         conn.close() # close connection to database
-        return 'Room does not exist.' #room does not exist yet
+        return 'Room does not exist.'
 
+    # there are more than one room with this room code
     if len(rooms_json) > 1:
         conn.commit() # commit commands
         conn.close() # close connection to database
-        return 'Multiple rooms with this room code exist' #there are more than one room with this room code
+        return 'Multiple rooms with this room code exist'
 
     # json load: turns json file into python dictionary
     room = json.loads(rooms_json[0][0])
 
+    # can't join room under the same username, username already exists
     if user in room['player_data']:
         conn.commit()
         conn.close()
-        return 'Username already exists' #can't join room under the same username, username already exists
+        return 'Username already exists'
 
-    if room['game_data']['in_lobby']:
-        conn.commit() # commit commands
-        conn.close() # close connection to database
-        return 'Game is not in lobby' #can't join room while game is not in lobby
+    # can't join room while game is not in lobby
+    if not room['game_data']['in_lobby']:
+        conn.commit()
+        conn.close()
+        return 'Game is not in lobby'
 
+    # Initializes a simple dictionary for the user
+    room['player_data'][user] = {}
     room['player_data'][user]["score"] = 0
     room['player_data'][user]["submitted"] = False
     room['player_data'][user]["submission"] = None
@@ -79,17 +92,4 @@ def join_room (request):
         out += player
         out += ','
 
-
     return out #string representing all usernames separated by ","
-    #example: jimmy,karen,michelle,
-
-#players = ['karen', 'michelle']
-#out = ''
-#for player in players:
-#    out += player
-#    out += ','
-#print(out)
-
-#print(len([[1],[2]]))
-#lst = [[1], [2]]
-#print(lst[0][0])

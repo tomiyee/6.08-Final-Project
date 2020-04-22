@@ -9,9 +9,11 @@ sys.path.append('__HOME__/bluffalo')
 from game_check import in_lobby, room_code_check
 from word_prompt import current_prompt
 from create_room import create_room
+from delete_room import delete_room
 from join_room import join_room
 from start_game import start_game
 from submit_bluff import submit_bluff
+from dump_data import dump_data
 
 # The database with game data for everyone
 bluffalo_db = '__HOME__/bluffalo/game_data.db'
@@ -29,6 +31,8 @@ def request_handler (request) :
             return room_code_check(request)
         if action == "current_prompt":
             return current_prompt(request)
+        if action == "dump_data":
+            return dump_data(request)
 
     if request['method'] == 'POST':
         if 'action' not in request['form']:
@@ -40,6 +44,8 @@ def request_handler (request) :
             return initialize_game_db()
         if action == "create_room":
             return create_room(request)
+        if action == "delete_room":
+            return delete_room(request)
         if action == "join_room":
             return join_room(request)
         if action == "start_game":
