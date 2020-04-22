@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import os
 
 bluffalo_db = os.path.dirname(__file__) + '/game_data.db'
 # Note json.load(String) and json.dumps(Objects)
@@ -9,17 +10,32 @@ def room_code_check(request):
     Given the GET request with:
       String room_code - The characters that rep the room code
 
-    Returns the string "None" if no room, and the room code if the room exists
+    Returns the string "false" if no room, and the string "true"
     """
 
-    pass
+    try:
+        room_code = request['values']['room_code']
+    except:
+        return '1' #one of the required parameters are missing
+
+    conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
+    connection = conn.cursor()
+    room_rows = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,)).fetchall()
+    conn.commit() # commit commands
+    conn.close() # close connection to database
+
+    response = "false"
+    if len(room_rows) > 0:
+        response = "true"
+
+    return response
 
 def in_lobby(request):
     """
     Given the GET request with:
       String room_code - The characters that rep the room code
 
-    Returns the string "None" if not in lobby, and the room code if in lobby
+    Returns the string "false" if not in_lobby, and the string "true" if in_lobby
     """
 
     pass

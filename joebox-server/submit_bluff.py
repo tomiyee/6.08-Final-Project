@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import os
 
 bluffalo_db = os.path.dirname(__file__) + '/game_data.db'
 # Note json.load(String) and json.dumps(Objects)
@@ -29,7 +30,7 @@ def submit_bluff (request):
 
     try:
         room_code = request['form']['roomcode']
-        user = request['form']['user_name']
+        user = request['form']['user']
         bluff_submitted = request['form']['bluff'] # text submission user entered on ESP
     except:
         return '1' #one of the required parameters are missing
