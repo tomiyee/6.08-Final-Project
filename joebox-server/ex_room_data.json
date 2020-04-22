@@ -1,14 +1,14 @@
 {
   "player_data": {
     "Joe 1": {
-       "Score": 0,
-       "Submitted": false,
-       "Submission": null  // Same as None in Python
+       "score": 0,
+       "submitted": false,
+       "submission": null  // Same as None in Python
     },
     "Joe 2": {
-       "Score": 100,
-       "Submitted": true,
-       "Submission": "Help"
+       "score": 100,
+       "submitted": true,
+       "submission": "Help"
     }
   },
 

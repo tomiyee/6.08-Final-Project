@@ -3,7 +3,7 @@ import sqlite3
 import os
 
 bluffalo_db = os.path.dirname(__file__) + '/game_data.db'
-# Note json.load(String) and json.dumps(Objects)
+# Note json.loads(String) and json.dumps(Objects)
 
 def join_room (request):
     """
@@ -31,7 +31,7 @@ def join_room (request):
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor()
     try:
-        rooms_json = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,))[0][0]
+        rooms_json = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,)).fetchall()[0][0]
         # Fetch the JSON String from the SQL with the right room code
         if len(rooms_json) == 0:
             conn.commit() # commit commands

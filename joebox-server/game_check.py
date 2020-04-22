@@ -3,7 +3,7 @@ import sqlite3
 import os
 
 bluffalo_db = os.path.dirname(__file__) + '/game_data.db'
-# Note json.load(String) and json.dumps(Objects)
+# Note json.loads(String) and json.dumps(Objects)
 
 def room_code_check(request):
     """
