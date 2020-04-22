@@ -29,7 +29,8 @@ def join_room (request):
     if 'user' not in request['form']:
         return "Missing Username"
 
-
+    room_code = request['form']['room_code']
+    user = request['form']['user']
 
     # connect to that database (will create if it doesn't already exist)
     conn = sqlite3.connect(bluffalo_db)
