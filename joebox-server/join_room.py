@@ -26,7 +26,7 @@ def join_room (request):
         room_code = request['form']['roomcode']
         user = request['form']['username']
     except:
-        return '9' #one of the parameters in POST missing
+        return 'one of the parameters in POST missing'
 
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor()
@@ -36,24 +36,24 @@ def join_room (request):
         if len(rooms_json) == 0:
             conn.commit() # commit commands
             conn.close() # close connection to database
-            return '2' #room does not exist yet
+            return 'room does not exist yet'
 
-        # if len(rooms_json) > 1:
-        #     conn.commit() # commit commands
-        #     conn.close() # close connection to database
-        #     return '7' #there are more than one room with this room code
-        # # json load: turns json file into python dictionary
+        if len(rooms_json) > 1:
+            conn.commit() # commit commands
+            conn.close() # close connection to database
+            return 'there are more than one room with this room code'
+        # json load: turns json file into python dictionary
         room = json.load(rooms_json[0][0])
 
         if user in room['player_data']:
             conn.commit() # commit commands
             conn.close() # close connection to database
-            return '4' #can't join room under the same username, username already exists
+            return "can't join room under the same username, username already exists"
 
         if room['game_data']['in_lobby']:
             conn.commit() # commit commands
             conn.close() # close connection to database
-            return '5' #can't join room while game is not in lobby
+            return "can't join room while game is not in lobby"
 
         room['player_data'][user]["score"] = 0
         room['player_data'][user]["submitted"] = False
@@ -81,7 +81,7 @@ def join_room (request):
         conn.commit() # commit commands
         conn.close() # close connection to database
 
-        return '-1' #don't know what happened
+        return "don't know what happened"
 
 #players = ['karen', 'michelle']
 #out = ''
