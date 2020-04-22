@@ -19,6 +19,7 @@ window.onload = start;
 function start () {
   // Insert Start Code Here
   roomCodeInput = $("#room-code-input");
+    $('#room-code-input').keypress(inputKeyPressHandler);
   $('#room-code-input').keydown(inputKeyDownHandler);
   $('.game-container').hide();
     $('.error-room').hide();
@@ -52,10 +53,27 @@ async function loop () {
  * @param  {Event} e Key Down Event data
  */
 async function inputKeyDownHandler (e) {
+    
   // If they pressed enter, clear the input
   if (e.keyCode == 13) {
       enterRoomCode();
   }
+}
+
+async function inputKeyPressHandler (e) {
+    
+    if (e.keyCode >= 97 && e.keyCode <= 122) {
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+            let charCode = e.keyCode - 32;
+            let start = e.target.selectionStart;
+            let end = e.target.selectionEnd;
+            e.target.value = e.target.value.substring(0, start) + String.fromCharCode(charCode) + e.target.value.substring(end);
+            e.target.setSelectionRange(start+1, start+1);
+            e.preventDefault();
+        }
+    }
+    
+
 }
 
 async function inputButtonPressHandler () {
@@ -75,6 +93,13 @@ async function enterRoomCode () {
         $(".button-room-input").hide();
         $('.game-container').show();
         $('.room-code').text(roomCodeInput.val());
+        
+        response = await sendHttpRequest (
+            "GET",
+            SERVER_URL+"?action=in_lobby&room_code="+roomCodeInput.val());
+        if (response.trim() == "false") {
+            displayPrompt();
+        }
     }
     // If the room code does not exist, show the error
     else {
@@ -82,6 +107,19 @@ async function enterRoomCode () {
     }
 
     roomCodeInput.val("");
+}
+
+async function displayPrompt () {
+    let response = await sendHttpRequest (
+        "GET",
+        SERVER_URL+"?action=current_prompt&room_code="+roomCodeInput.val());
+    
+    let whole_prompt = response.trim().split("=");
+    let word = whole_prompt[0];
+    let prompt = whole_prompt[1];
+    
+    $('.word').text(word);
+    $('.prompt').text(prompt);
 }
 
 
