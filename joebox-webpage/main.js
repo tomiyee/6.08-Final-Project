@@ -58,23 +58,24 @@ async function inputKeyDownHandler (e) {
 }
 
 async function enterRoomCode () {
-    let response = await sendHttpRequest ("GET", SERVER_URL+"?action=room_code_check&room_code="+roomCodeInput.val());
-    
-    if (response == "true") {
+
+    // Sends the HTTP request to check if the room code exists
+    let response = await sendHttpRequest (
+      "GET",
+      SERVER_URL+"?action=room_code_check&room_code="+roomCodeInput.val());
+      
+    // If the response is "true", proceed
+    if (response.trim() == "true") {
         $(".input-container").hide();
         $('.game-container').show();
         $('.room-code').text(roomCodeInput.val());
     }
-    
+    // If the room code does not exist, show the error
     else {
         $('.error-room').show();
     }
-    
-
 
     roomCodeInput.val("");
-    // Temporarily sends a response to this server.
-    
 }
 
 
