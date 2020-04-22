@@ -29,9 +29,23 @@ def create_room (request):
       }
     }
 
-    # Generate a random room code
-    room_code = "".join([random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ") for i in range(4)])
-
     # insert the new_room to the room_code
+    conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
+    connection = conn.cursor()  # move cursor into database (allows us to execute commands)
+    connection.execute('''CREATE TABLE IF NOT EXISTS game_table (room_code text, game_data text);''') # run a CREATE TABLE command
 
+    # Constantly generates a random room code until there is not a collision
+    while True:
+        # Generate a random room code
+        room_code = "".join([random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ") for i in range(4)])
+        room_data_text = json.dumps(new_room)
+        rows = connection.execute('''SELECT * FROM game_table WHERE room_code=?;''', (room_code,)).fetchall()
+        if len(rows) > 0:
+            continue
+        # If no room has this room code, we can stop looping
+        break
+    # Creates the row with the room code and the empty data
+    connection.execute('''INSERT into game_table VALUES (?,?);''', (room_code, room_data_text))
+    conn.commit()
+    conn.close()
     return room_code
