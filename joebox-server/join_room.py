@@ -21,14 +21,12 @@ def join_room (request):
     9: one of the required parameters for post request is missing
     """
 
-    room_code = request['form']['room_code']
-    user = request['form']['user']
 
     # data from request: room code, player user name, and their bluff submitted
     # one of the parameters in POST missing
-    if room_code not in request['form']:
+    if 'room_code' not in request['form']:
         return "Missing Room Code"
-    if user not in request['form'];
+    if 'user' not in request['form'];
         return "Missing Username"
 
 
