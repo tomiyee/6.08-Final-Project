@@ -3,7 +3,7 @@ import sqlite3
 import os
 
 bluffalo_db = os.path.dirname(__file__) + '/game_data.db'
-# Note json.load(String) and json.dumps(Objects)
+# Note json.loads(String) and json.dumps(Objects)
 
 def current_prompt (request):
     """
@@ -22,17 +22,15 @@ def current_prompt (request):
     connection = conn.cursor()
 
     try:
-        room_json_string = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?''', (room_code,)).fetchall()[0]
+        room_json_string = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?''', (room_code,)).fetchall()[0][0]
     except:
         conn.commit()
         conn.close()
         return "Room code does not exist."
 
-    room_json = json.load(room_json_string)
+    room_json = json.loads(room_json_string)
     game_data = room_json['game_data']
-    current_word, current_meaning = game_data['Current_word'], game_data['Current_meaning']
+    current_word, current_meaning = game_data['current_word'], game_data['current_meaning']
     conn.commit()
     conn.close()
     return '{}={}'.format(current_word, current_meaning)
-        
-        
