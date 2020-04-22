@@ -57,6 +57,7 @@ def submit_bluff (request):
     if room['player_data'][user]["submitted"] == True:
         conn.commit() # commit commands
         conn.close() # close connection to database
+        print(room)
         return 'Player already submitted a bluff this round'
 
     if room['game_data']['in_lobby']:
