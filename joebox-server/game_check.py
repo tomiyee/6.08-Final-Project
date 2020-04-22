@@ -38,4 +38,21 @@ def in_lobby(request):
     Returns the string "false" if not in_lobby, and the string "true" if in_lobby
     """
 
-    pass
+    if 'room_code' not in request['values']:
+        return 'Missing room_code'
+    room_code = request['values']['room_code']
+
+    conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
+    connection = conn.cursor()
+    room_rows = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,)).fetchall()
+    conn.commit() # commit commands
+    conn.close() # close connection to database
+
+    if len(room_rows) == 0:
+        return "Room code does not exist."
+
+    room_data = json.loads(room_rows[0][0])
+
+    if room_data["game_data"]["in_lobby"]:
+        return "true"
+    return "false"

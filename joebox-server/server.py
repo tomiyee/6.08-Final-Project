@@ -71,7 +71,7 @@ def initialize_game_db ():
           },
 
           "game_data": {
-            "in_lobby": "False",
+            "in_lobby": false,
             "current_word": "acinaceous",
             "current_meaning": "full of _____",
             "current_answer": "kernels",

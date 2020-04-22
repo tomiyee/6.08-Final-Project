@@ -13,7 +13,7 @@
   },
 
   "game_data": {
-    "in_lobby": "False",
+    "in_lobby": false,
     "current_word": "babble",
     "current_meaning": "to ___ on and on",
     "current_answer": "drone",
