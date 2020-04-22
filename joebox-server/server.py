@@ -8,6 +8,7 @@ sys.path.append('__HOME__/bluffalo')
 # import individual action handlers
 from game_check import in_lobby, room_code_check
 from word_prompt import current_prompt
+from create_room import create_room
 from join_room import join_room
 from start_game import start_game
 from submit_bluff import submit_bluff
@@ -37,6 +38,8 @@ def request_handler (request) :
         # Selects the correct handler for the action
         if action == "initialize_game_db":
             return initialize_game_db()
+        if action == "create_room":
+            return create_room(request)
         if action == "join_room":
             return join_room(request)
         if action == "start_game":
