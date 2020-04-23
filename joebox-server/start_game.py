@@ -22,7 +22,7 @@ def start_game (request):
     connection = conn.cursor()
     room_rows = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,)).fetchall()
 
-    if len(room_rows) > 0:
+    if len(room_rows) == 0:
         conn.commit() # commit commands
         conn.close() # close connection to database
         return "Room does not exist"
