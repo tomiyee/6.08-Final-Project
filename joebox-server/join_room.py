@@ -36,6 +36,8 @@ def join_room (request):
     conn = sqlite3.connect(bluffalo_db)
     connection = conn.cursor()
 
+    room_code = request['form']['room_code']
+    user = request['form']['user']
     # Fetch the JSON String from the SQL with the right room code
     rooms_json = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,)).fetchall()
 
