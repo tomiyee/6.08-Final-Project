@@ -2,21 +2,24 @@
   "player_data": {
     "Joe 1": {
        "score": 0,
+       "voted":false,
+       "voted_correctly":false,
        "submitted": false,
-       "submission": null
+       "submission": null,
+       "votes_received": []
     },
     "Joe 2": {
        "score": 100,
+       "voted":false,
+       "voted_correctly":false,
        "submitted": true,
-       "submission": "Help"
+       "submission": "Help",
+       "votes_received": []
     }
   },
 
   "game_data": {
     "in_lobby": false,
-    "current_word": "babble",
-    "current_meaning": "to ___ on and on",
-    "current_answer": "drone",
     "all_prompts": [
       ["word1", "def1", "ans1"],
       ["word2", "def2", "ans2"],

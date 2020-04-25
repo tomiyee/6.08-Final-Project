@@ -38,6 +38,7 @@ def start_game (request):
         return "Game already in progress"
 
     room_data['game_data']['in_lobby'] = False
+    room_data['game_data']['waiting_for_submissions'] = True
 
     # (TODO) Trigger events that occur once the game starts, like setting the question
 

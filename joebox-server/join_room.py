@@ -69,10 +69,14 @@ def join_room (request):
         return 'Game is not in lobby'
 
     # Initializes a simple dictionary for the user
-    room['player_data'][user] = {}
-    room['player_data'][user]["score"] = 0
-    room['player_data'][user]["submitted"] = False
-    room['player_data'][user]["submission"] = None
+    room['player_data'][user] = {
+       "score": 0,
+       "voted": False,
+       "voted_correctly": False,
+       "submitted": False,
+       "submission": None,
+       "votes_received": []
+    }
 
     # json dump: turns dictionary to json thing
     new_room_json = json.dumps(room)
