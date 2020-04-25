@@ -14,6 +14,7 @@ from join_room import join_room
 from start_game import start_game
 from submit_bluff import submit_bluff
 from dump_data import dump_data
+from list_players import list_players
 
 # The database with game data for everyone
 bluffalo_db = '__HOME__/bluffalo/game_data.db'
@@ -31,6 +32,8 @@ def request_handler (request) :
             return room_code_check(request)
         if action == "current_prompt":
             return current_prompt(request)
+        if action == "list_players":
+            return list_players(request)
         if action == "dump_data":
             return dump_data(request)
         return "Unhandled GET action: " + action + ". Double check the action is spelled correctly."
