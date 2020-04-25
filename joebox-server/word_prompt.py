@@ -20,17 +20,22 @@ def current_prompt (request):
 
     conn = sqlite3.connect(bluffalo_db)
     connection = conn.cursor()
-
-    try:
-        room_json_string = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?''', (room_code,)).fetchall()[0][0]
-    except:
-        conn.commit()
-        conn.close()
-        return "Room code does not exist."
-
-    room_json = json.loads(room_json_string)
-    game_data = room_json['game_data']
-    current_word, current_meaning = game_data['current_word'], game_data['current_meaning']
+    rows = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?''', (room_code,)).fetchall()
     conn.commit()
     conn.close()
+
+    if not rows:
+        return "Room code does not exist."
+
+    room_json_string = rows[0][0]
+    room = json.loads(room_json_string)
+
+
+    game_data = room['game_data']
+    # current_word, current_meaning = game_data['current_word'], game_data['current_meaning']
+
+    round_number, question_number = game_data['round_number'], game_data['question_number']
+    word_number = (round_number-1)*3+question_number-1
+    current_word, current_meaning, current_ans = game_data['all_prompts'][word_number]
+
     return '{}={}'.format(current_word, current_meaning)

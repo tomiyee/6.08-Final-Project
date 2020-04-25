@@ -3,7 +3,7 @@
     "Joe 1": {
        "score": 0,
        "submitted": false,
-       "submission": null  // Same as None in Python
+       "submission": null
     },
     "Joe 2": {
        "score": 100,
@@ -17,6 +17,15 @@
     "current_word": "babble",
     "current_meaning": "to ___ on and on",
     "current_answer": "drone",
+    "all_prompts": [
+      ["word1", "def1", "ans1"],
+      ["word2", "def2", "ans2"],
+      ["word3", "def3", "ans3"],
+      ["word4", "def4", "ans4"],
+      ["word5", "def5", "ans5"],
+      ["word6", "def6", "ans6"],
+      ["word7", "def7", "ans7"]
+    ],
     "round_number": 2,
     "question_number": 3,
     "waiting_for_submissions": true,

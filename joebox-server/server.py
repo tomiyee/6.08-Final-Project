@@ -33,6 +33,7 @@ def request_handler (request) :
             return current_prompt(request)
         if action == "dump_data":
             return dump_data(request)
+        return "Unhandled GET action: " + action + ". Double check the action is spelled correctly."
 
     if request['method'] == 'POST':
         if 'action' not in request['form']:
@@ -52,6 +53,7 @@ def request_handler (request) :
             return start_game(request)
         if action == "submit_bluff":
             return submit_bluff(request)
+        return "Unhandled POST action: " + action + ". Double check the action is spelled correctly."
 
     return "Unhandled action: " + action + ". Double check the action is spelled correctly."
 
@@ -81,11 +83,17 @@ def initialize_game_db ():
 
           "game_data": {
             "in_lobby": false,
-            "current_word": "acinaceous",
-            "current_meaning": "full of _____",
-            "current_answer": "kernels",
-            "round_number": 2,
-            "question_number": 3,
+            "all_prompts": [
+                ["anteambulo","_____","usher"],
+                ["antejentacular","before _____","breakfast"],
+                ["anteloquy","a _____","preface"],
+                ["antepast","_____","foretaste"],
+                ["antepone","to _____ before","put"],
+                ["anteprandial","before _____","dinner"],
+                ["antevenient","_____","preceding"]
+            ],
+            "round_number": 1,
+            "question_number": 1,
             "waiting_for_submissions": true,
             "selecting_options": false
           }

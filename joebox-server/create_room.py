@@ -17,11 +17,10 @@ def create_room (request):
 
     new_room = {
       "player_data": {},
+
       "game_data": {
         "in_lobby": True,
-        "current_word": None,
-        "current_meaning": None,
-        "current_answer": None,
+        "all_prompts": [],
         "round_number": 1,
         "question_number": 1,
         "waiting_for_submissions": False,
