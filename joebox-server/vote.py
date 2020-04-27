@@ -85,11 +85,11 @@ def vote (request):
         # Tally Scores
         for player in room_data['player_data']:
             # Points for fooling others
-            room_data['player_data']['score'] +=
-                500 * room_data['game_data']['round_number'] * len(room_data['player_data'][player]['votes_received'])
+            room_data['player_data']['score'] += (
+                500 * room_data['game_data']['round_number'] * len(room_data['player_data'][player]['votes_received']))
             # Points for right answer
-            room_data['player_data']['score'] +=
-                1000 * room_data['player_data'][player]['voted_correctly']
+            room_data['player_data']['score'] += (
+                1000 * room_data['player_data'][player]['voted_correctly'])
             # Reset
             room_data['player_data'][player]['votes_received'] = []
             room_data['player_data'][player]['voted'] = False

@@ -35,7 +35,7 @@ def list_players (request):
     #dictionary of game and player data for room with given room code
     room_data = json.loads(room_rows[0][0])
     #list of players currently in game
-    players = [player for player in room_data['player_data']:
+    players = [player for player in room_data['player_data']]
 
     if len(players) == 0:
         return "No players in game currently"
