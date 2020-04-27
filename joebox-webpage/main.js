@@ -29,8 +29,6 @@ function start () {
   setInterval (loop, DT);
 }
 
-
-
 /**
  * @function loop - This function will be called periodically, every DT ms
  */
@@ -44,24 +42,27 @@ async function loop () {
 
 }
 
-
-
 /**
  * @function inputKeyDownHandler - Handles the key down event when someone is
  * typing into the input.
  *
- * @param  {Event} e Key Down Event data
+ * @param  {KeyboardEvent} e Key Down Event data
  */
 async function inputKeyDownHandler (e) {
-    
+
   // If they pressed enter, clear the input
   if (e.keyCode == 13) {
       enterRoomCode();
   }
 }
 
+/**
+ * @function inputKeyPressHandler - Whenever the user presses a button while
+ * focused on the input.
+ *
+ * @param  {KeyboardEvent} e Key Down Event data
+ */
 async function inputKeyPressHandler (e) {
-    
     if (e.keyCode >= 97 && e.keyCode <= 122) {
         if (!e.ctrlKey && !e.metaKey && !e.altKey) {
             let charCode = e.keyCode - 32;
@@ -72,8 +73,6 @@ async function inputKeyPressHandler (e) {
             e.preventDefault();
         }
     }
-    
-
 }
 
 async function inputButtonPressHandler () {
@@ -93,7 +92,7 @@ async function enterRoomCode () {
         $(".button-room-input").hide();
         $('.game-container').show();
         $('.room-code').text(roomCodeInput.val());
-        
+
         response = await sendHttpRequest (
             "GET",
             SERVER_URL+"?action=in_lobby&room_code="+roomCodeInput.val());
@@ -113,16 +112,24 @@ async function displayPrompt () {
     let response = await sendHttpRequest (
         "GET",
         SERVER_URL+"?action=current_prompt&room_code="+roomCodeInput.val());
-    
+
     let whole_prompt = response.trim().split("=");
     let word = whole_prompt[0];
     let prompt = whole_prompt[1];
-    
+
     $('.word').text(word);
     $('.prompt').text(prompt);
 }
 
-
+/**
+ * @function dump - Prints to console the entire contents of the game data db
+ */
+function dump () {
+  sendHttpRequest(
+    "GET",
+    "https://608dev-2.net/sandbox/sc/team033/bluffalo/server.py?action=dump_data")
+    .then((r) => console.log(r));
+}
 
 /**
  * @function sendHttpRequest - Handles sending HTTP Requests and wraps the process
