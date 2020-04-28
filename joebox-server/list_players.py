@@ -29,7 +29,7 @@ def list_players (request):
     if len(room_rows) == 0:
         return "No room with room code: " + room_code
 
-    if len(room_roms) > 1:
+    if len(room_rows) > 1:
         return "More than one room with this room code"
 
     #dictionary of game and player data for room with given room code
