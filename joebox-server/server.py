@@ -17,6 +17,8 @@ from dump_data import dump_data
 from list_players import list_players
 from get_bluffs import get_bluffs
 from vote import vote
+from get_scores import get_scores
+from waiting_for_votes import waiting_for_votes
 
 # The database with game data for everyone
 bluffalo_db = '__HOME__/bluffalo/game_data.db'
@@ -30,6 +32,8 @@ def request_handler (request) :
         # Selects the correct handler for the action
         if action == "in_lobby":
             return in_lobby(request)
+        if action == "waiting_for_votes":
+            return waiting_for_votes(request)
         if action == "room_code_check":
             return room_code_check(request)
         if action == "current_prompt":
@@ -38,6 +42,8 @@ def request_handler (request) :
             return list_players(request)
         if action == "get_bluffs":
             return get_bluffs(request)
+        if action == "get_scores":
+            return get_scores(request)
         if action == "dump_data":
             return dump_data(request)
         return "Unhandled GET action: " + action + ". Double check the action is spelled correctly."
