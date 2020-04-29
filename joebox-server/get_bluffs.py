@@ -39,11 +39,13 @@ def get_bluffs (request):
 
     # Builds a list of bluffs, without repetition
     bluffs = set()
+    
     # Fetches the correct answer
     round_number, question_number = game_data['round_number'], game_data['question_number']
-    word_number = (round_number-1)*3+question_number-1
+    word_number = (round_number - 1) * 3 + question_number - 1
     current_word, current_meaning, current_ans = game_data['all_prompts'][word_number]
     bluffs.add(current_ans)
+
     # Fetches the Player Submitted Answers
     for player in room_data['player_data']:
         if not room_data['player_data'][player]['submitted']:
@@ -51,7 +53,7 @@ def get_bluffs (request):
         else:
             bluffs.add(room_data['player_data'][player]['submission'])
 
-    #If user is provided, remove their submission before returning
+    # If user is provided, remove their submission before returning
     if 'user' in request['values']:
         user = request['values']['user']
         bluffs.remove(room_data['player_data'][user]['submission'])
