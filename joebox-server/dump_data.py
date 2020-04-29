@@ -27,7 +27,7 @@ def dump_data (request):
     if 'room_code' in request['values']:
         conn = sqlite3.connect(bluffalo_db)
         connection = conn.cursor()
-        room_data = connection.execute('''SELECT game_data FROM game_table WHERE room_code=?''', (request['value']['room_code'],)).fetchall();
+        room_data = connection.execute('''SELECT game_data FROM game_table WHERE room_code=?''', (request['values']['room_code'],)).fetchall();
         conn.commit()
         conn.close()
         if len(room_data) == 0:

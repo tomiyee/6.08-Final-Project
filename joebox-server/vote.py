@@ -44,6 +44,12 @@ def vote (request):
 
     room_data = json.loads(room_rows[0][0])
 
+    game_data = room_data['game_data']
+    round_number, question_number = game_data['round_number'], game_data['question_number']
+    word_number = (round_number-1)*3+question_number-1
+    current_word, current_meaning, current_ans = game_data['all_prompts'][word_number]
+    bluffs.add(current_ans)
+
     for player in room_data['player_data']:
         if not room_data['player_data'][player]['submitted']:
             bluffs.add("No Submission")
@@ -51,10 +57,6 @@ def vote (request):
             bluffs.add(room_data['player_data'][player]['submission'])
     bluffs.remove(room_data['player_data'][user]['submission'])
     bluffs = sorted(list(bluffs))
-
-    round_number, question_number = game_data['round_number'], game_data['question_number']
-    word_number = (round_number-1)*3+question_number-1
-    current_word, current_meaning, current_ans = game_data['all_prompts'][word_number]
 
     if bluffs[choice_index] == current_ans:
         room_data['player_data'][user]['voted_correctly'] = True
@@ -69,10 +71,6 @@ def vote (request):
     # records that the user has votes
     room_data['player_data'][user]['voted'] = True
 
-    new_room_json = json.dumps(room_data)
-
-
-
     # Check if everyone has finished voting, and if so, increment game number
     # calculate new scores, and clear votes
     num_no_vote = 0
@@ -85,10 +83,10 @@ def vote (request):
         # Tally Scores
         for player in room_data['player_data']:
             # Points for fooling others
-            room_data['player_data']['score'] += (
+            room_data['player_data'][player]['score'] += (
                 500 * room_data['game_data']['round_number'] * len(room_data['player_data'][player]['votes_received']))
             # Points for right answer
-            room_data['player_data']['score'] += (
+            room_data['player_data'][player]['score'] += (
                 1000 * room_data['player_data'][player]['voted_correctly'])
             # Reset
             room_data['player_data'][player]['votes_received'] = []
@@ -104,6 +102,7 @@ def vote (request):
         else:
             room_data['game_data']['question_number'] += 1
 
+    new_room_json = json.dumps(room_data)
 
     connection.execute('''UPDATE game_table SET game_data =? WHERE room_code =?;''', (new_room_json, room_code)).fetchall()
     conn.commit() # commit commands

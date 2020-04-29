@@ -87,9 +87,5 @@ def join_room (request):
     conn.close()
 
     players = [player for player in room['player_data']]
-    out = ''
-    for player in players:
-        out += player
-        out += ','
 
-    return out #string representing all usernames separated by ","
+    return ",".join(players) #string representing all usernames separated by ","
