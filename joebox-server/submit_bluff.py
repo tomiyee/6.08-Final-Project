@@ -70,7 +70,7 @@ def submit_bluff (request):
 
 
     room['player_data'][user]["submitted"] = True
-    room['player_data'][user]["submission"] = lower(bluff_submitted)
+    room['player_data'][user]["submission"] = bluff_submitted.lower()
 
     all_players_submitted = True
     num_no_submission = 0 #players who haven't submitted yet
