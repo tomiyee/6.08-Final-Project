@@ -11,14 +11,12 @@ def waiting_for_votes (request):
     Given the GET request with:
       String room_code - The characters that represent the room code
 
-    This API call should loop through the player_data object that corresponds
-    to the room_code, and if player_data[player]['voted'] is False for any
-    player, we should return the string "true".
+    This API call should access the room data for the room_code, and check if
+    the value for "game_data", under "waiting_for_votes" is True. If
+    waiting_for_votes is True, then this API call should return "true", and
+    "false" otherwise.
 
-    Make sure to check for all the false cases, like if we are in the lobby or
-    if we are waiting for submissions.
-
-    Returns a comma-separated string of players and their scores
+    Returns "true" if the game is waiting for votes, and "false" otherwise
     """
 
     # Temporary Return Value

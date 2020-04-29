@@ -32,6 +32,6 @@
     "round_number": 2,
     "question_number": 3,
     "waiting_for_submissions": true,
-    "selecting_options": false
+    "waiting_for_votes": false
   }
 }

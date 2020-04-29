@@ -24,7 +24,7 @@ def create_room (request):
         "round_number": 1,
         "question_number": 1,
         "waiting_for_submissions": False,
-        "selecting_options": False
+        "waiting_for_votes": False
       }
     }
 

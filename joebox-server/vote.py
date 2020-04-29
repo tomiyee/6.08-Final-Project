@@ -79,7 +79,7 @@ def vote (request):
             num_no_vote += 1
     if num_no_vote == 0:
         # Do something to move on to the next stage. Idk man
-
+        room_data["game_data"]['waiting_for_votes'] = False
         # Tally Scores
         for player in room_data['player_data']:
             # Points for fooling others
