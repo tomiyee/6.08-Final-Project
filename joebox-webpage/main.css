@@ -72,3 +72,22 @@ div {
     right: 2px;
     bottom: 2px;
 }
+
+.lobby-label {
+    font-size: 40px;
+    padding-top: 10px;
+    padding-bottom: 20px;
+    font-weight: bold;
+}
+
+.players {
+    font-size: 30px;
+}
+
+.pretty-button {
+  font-size: 20px;
+  font-weight:bold;
+    font-family: montserrat;
+    margin-top: 20px;
+    border-radius: 10px;
+}

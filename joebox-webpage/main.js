@@ -22,8 +22,12 @@ function start () {
     $('#room-code-input').keypress(inputKeyPressHandler);
   $('#room-code-input').keydown(inputKeyDownHandler);
   $('.game-container').hide();
+    $('.lobby-container').hide();
     $('.error-room').hide();
     $('.button-room-input').click(inputButtonPressHandler);
+    $('.button-start-game').click(startGameButtonPressHandler);
+    
+    
 
   // Sets the loop to be called every DT ms
   setInterval (loop, DT);
@@ -83,22 +87,25 @@ async function inputButtonPressHandler () {
 async function enterRoomCode () {
 
     // Sends the HTTP request to check if the room code exists
+    roomCode = roomCodeInput.val();
     let response = await sendHttpRequest (
       "GET",
-      SERVER_URL+"?action=room_code_check&room_code="+roomCodeInput.val());
+      SERVER_URL+"?action=room_code_check&room_code="+roomCode);
 
     // If the response is "true", proceed
     if (response.trim() == "true") {
-        $(".input-container").hide();
-        $(".button-room-input").hide();
-        $('.game-container').show();
-        $('.room-code').text(roomCodeInput.val());
+        hideAllOthers('.game-container');
+        $('.room-code').text(roomCode);
         
         response = await sendHttpRequest (
             "GET",
-            SERVER_URL+"?action=in_lobby&room_code="+roomCodeInput.val());
+            SERVER_URL+"?action=in_lobby&room_code="+roomCode);
         if (response.trim() == "false") {
             displayPrompt();
+        }
+        else {
+            hideAllOthers('.lobby-container');
+            displayLobby();
         }
     }
     // If the room code does not exist, show the error
@@ -109,10 +116,22 @@ async function enterRoomCode () {
     roomCodeInput.val("");
 }
 
+async function startGameButtonPressHandler() {
+    // Sends the HTTP request to check if the room code exists
+    let response = await sendHttpRequest (
+      "POST",
+      SERVER_URL,
+        "action=start_game&room_code="+roomCode
+        
+    );
+    hideAllOthers('.game-container');
+    displayPrompt();
+}
+
 async function displayPrompt () {
     let response = await sendHttpRequest (
         "GET",
-        SERVER_URL+"?action=current_prompt&room_code="+roomCodeInput.val());
+        SERVER_URL+"?action=current_prompt&room_code="+roomCode);
     
     let whole_prompt = response.trim().split("=");
     let word = whole_prompt[0];
@@ -120,6 +139,38 @@ async function displayPrompt () {
     
     $('.word').text(word);
     $('.prompt').text(prompt);
+}
+
+async function displayLobby () {
+    let response = await sendHttpRequest (
+        "GET",
+        SERVER_URL+"?action=list_players&room_code="+roomCode);
+    
+    let all_players = response.trim().split(",");
+    let left_players = [];
+    let right_players = [];
+    for (let i = 0; i < all_players.length; i++) {
+        if (i % 2 == 0) {
+            left_players.push(all_players[i]);
+        }
+        else {
+            right_players.push(all_players[i]);
+        }
+    }
+    
+    $('.left-players')[0].innerHTML=left_players.join("<br>");
+    $('.right-players')[0].innerHTML=right_players.join("<br>");
+    
+//    $('.players').text(all_players);
+}
+
+function hideAllOthers (container) {
+    $('.game-container').hide();
+    $('.lobby-container').hide();
+    $('.error-room').hide();
+    $(".input-container").hide();
+    
+    $(container).show();
 }
 
 
