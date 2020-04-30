@@ -54,8 +54,11 @@ char submission[100] = {0};
 char old_submission[100] = {0};
 
 unsigned long primary_timer;
-unsigned long lobby_timer = 15000;
+unsigned long lobby_timer = 7000;
 int last_post = millis();
+
+int choice_vote = 1;
+int num_players;
 
 int old_val;
 
@@ -291,6 +294,7 @@ void loop() {
     }
 
     if (flag2 == 1){
+      user[strlen(user)-1]='\0';
       stateMain = MAIN;
       tft.fillScreen(TFT_WHITE);
       tft.setTextSize(2);
@@ -411,15 +415,15 @@ void loop() {
       sprintf(request + strlen(request), "Host: %s\r\n\r\n", host);
       do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
       char * pointer;
-      int player_num = 0;
+      num_players = 0;
       char output[100];
       pointer = strtok(response,",");
       tft.setCursor(0,30);
       while (pointer != NULL)
       { 
         memset(output,0,sizeof(output));
-        player_num++;
-        sprintf(output,"%d: %s",player_num,pointer);
+        num_players++;
+        sprintf(output,"%d: %s",num_players,pointer);
         tft.println(output);
         pointer = strtok(NULL,",");
         
@@ -467,19 +471,19 @@ void loop() {
       sprintf(request + strlen(request), "Host: %s\r\n\r\n", host);
       do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
       char * pointer;
-      char output[300];
-      int player_num = 0;
+      num_players = 0;
+      char output[100];
       pointer = strtok(response,",");
+      tft.setCursor(0,30);
       while (pointer != NULL)
       { 
-        player_num++;
-        sprintf(output+strlen(output),"%d: %s\r\n",player_num,pointer);
+        memset(output,0,sizeof(output));
+        num_players++;
+        sprintf(output,"%d: %s",num_players,pointer);
+        tft.println(output);
         pointer = strtok(NULL,",");
         
       }
-      //Serial.println(output);
-      tft.setCursor(3,30);
-      tft.println(output);
 
 
       memset(request,0,sizeof(request));
@@ -539,7 +543,7 @@ void loop() {
       stateMain = WAITINGSUBMISSION;
       char request[500];
       char body[150];
-      sprintf(body,"action=submit_bluff&room_code=%s&user=%s&bluff",roomKey,user,submission);
+      sprintf(body,"action=submit_bluff&room_code=%s&user=%s&bluff=%s",roomKey,user,submission);
       sprintf(request,"POST /sandbox/sc/team033/bluffalo/server.py HTTP/1.1\r\n");
       sprintf(request + strlen(request), "Host: %s\r\n", host);
       strcat(request, "Content-Type: application/x-www-form-urlencoded\r\n");
@@ -548,35 +552,69 @@ void loop() {
 
       do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
       tft.fillScreen(TFT_WHITE);
+      
       tft.setCursor(3,10);
       tft.println(response);
+      last_post=millis();
     }
   }
   else if (stateMain == WAITINGSUBMISSION){
     if ((millis() - last_post) > lobby_timer){
       last_post = millis();
       char request[500];
-      char body[150];
-      sprintf(body,"action=waiting_for_votes&room_code=%s&user=%s&bluff",roomKey,user,submission);
-      sprintf(request,"GET /sandbox/sc/team033/bluffalo/server.py?action=waiting_for_votes&room_code=%s HTTP/1.1\r\n",roomKey);
+      sprintf(request,"GET /sandbox/sc/team033/bluffalo/server.py?action=waiting_for_submissions&room_code=%s HTTP/1.1\r\n",roomKey);
       sprintf(request + strlen(request), "Host: %s\r\n\r\n", host);
 
+      do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+      response[strlen(response)-1]='\0';
+      Serial.println(response);
+      Serial.println("false");
+      Serial.println(strcmp(response,"false"));
       if (strcmp(response,"false")==0){
+        tft.fillScreen(TFT_WHITE);
         stateMain = VOTE;
+        char request[500];
+        sprintf(request,"GET /sandbox/sc/team033/bluffalo/server.py?action=get_bluffs&room_code=%s&user=%s HTTP/1.1\r\n",roomKey,user);
+        sprintf(request + strlen(request), "Host: %s\r\n\r\n", host);
+        do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+        char * pointer;
+        int player_num = 0;
+        char output[100];
+        pointer = strtok(response,",");
+        tft.setCursor(3,3);
+        tft.println("Cast your vote");
+        tft.setCursor(0,30);
+        while (pointer != NULL)
+        { 
+          memset(output,0,sizeof(output));
+          player_num++;
+          sprintf(output,"%d: %s",player_num,pointer);
+          tft.println(output);
+          pointer = strtok(NULL,",");
+        }
       }
     }
   }
   else if (stateMain == VOTE){
-    char request[500];
-    char body[150];
-    sprintf(body,"action=get_bluffs&room_code=%s&user=%s&bluff",roomKey,user,submission);
-    sprintf(request,"POST /sandbox/sc/team033/bluffalo/server.py HTTP/1.1\r\n");
-    sprintf(request + strlen(request), "Host: %s\r\n", host);
-    strcat(request, "Content-Type: application/x-www-form-urlencoded\r\n");
-    sprintf(request + strlen(request), "Content-Length: %d\r\n\r\n", strlen(body));
-    strcat(request,body);
+    if (flag1 == 1){
+      choice_vote = choice_vote-1;
+      if (choice_vote == 0){
+        choice_vote = num_players+1;
+      }
+    }
+    else if (flag2 == 1){
+      choice_vote = choice_vote +1;
+      if (choice_vote > num_players+1){
+        choice_vote = 1;
+      }
+    }
 
-    do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+    tft.setCursor(0,10*num_players+30);
+    tft.print("Vote: ");
+    tft.println(choice_vote);
+    
+
+    
   }
 
 
