@@ -22,9 +22,9 @@ def get_bluffs (request):
         return "Misssing Room Code"
     room_code = request['values']['room_code']
 
-    # insert the new_room to the room_code
-    conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
-    connection = conn.cursor()  # move cursor into database (allows us to execute commands)
+    # Read the Room Data
+    conn = sqlite3.connect(bluffalo_db)
+    connection = conn.cursor()
     room_rows = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,)).fetchall()
     conn.commit()
     conn.close()
@@ -39,7 +39,7 @@ def get_bluffs (request):
 
     # Builds a list of bluffs, without repetition
     bluffs = set()
-    
+
     # Fetches the correct answer
     round_number, question_number = game_data['round_number'], game_data['question_number']
     word_number = (round_number - 1) * 3 + question_number - 1

@@ -3,7 +3,6 @@ import sqlite3
 import os
 import random
 
-
 bluffalo_db = os.path.dirname(__file__) + '/game_data.db'
 word_db = os.path.dirname(__file__) + '/../word-database/word_bank.db'
 # Note json.loads(String) and json.dumps(Objects)
