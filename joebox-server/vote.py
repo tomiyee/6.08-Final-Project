@@ -79,6 +79,7 @@ def vote (request):
     if num_no_vote == 0:
         # Do something to move on to the next stage. Idk man
         room_data["game_data"]['waiting_for_votes'] = False
+        room_data["game_data"]['waiting_for_submissions'] = True
         # Tally Scores
         for player in room_data['player_data']:
             # Points for fooling others
@@ -97,6 +98,8 @@ def vote (request):
             room_data['game_data']['question_number'] = 1
         elif room_data['game_data']['round_number'] == 3:
             # Begin endgame
+            room_data["game_data"]['waiting_for_submissions'] = False
+            room_data["game_data"]['in_lobby'] = True
             pass
         else:
             room_data['game_data']['question_number'] += 1
