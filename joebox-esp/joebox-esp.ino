@@ -566,6 +566,18 @@ void loop() {
       }
     }
   }
+  else if (stateMain == VOTE){
+    char request[500];
+    char body[150];
+    sprintf(body,"action=get_bluffs&room_code=%s&user=%s&bluff",roomKey,user,submission);
+    sprintf(request,"POST /sandbox/sc/team033/bluffalo/server.py HTTP/1.1\r\n");
+    sprintf(request + strlen(request), "Host: %s\r\n", host);
+    strcat(request, "Content-Type: application/x-www-form-urlencoded\r\n");
+    sprintf(request + strlen(request), "Content-Length: %d\r\n\r\n", strlen(body));
+    strcat(request,body);
+
+    do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+  }
 
 
 
