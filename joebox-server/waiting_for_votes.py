@@ -1,20 +1,23 @@
 import json
 import sqlite3
 import os
+import random
 
 bluffalo_db = os.path.dirname(__file__) + '/game_data.db'
 # Note json.loads(String) and json.dumps(Objects)
 
-def list_players (request):
+def waiting_for_votes (request):
     """
     Given the GET request with:
-      String room_code - The characters that rep the room code
+      String room_code - The characters that represent the room code
 
-    Returns a comma-separated string of players in the specified room
+    This API call should access the room data for the room_code, and check if
+    the value for "game_data", under "waiting_for_votes" is True. If
+    waiting_for_votes is True, then this API call should return "true", and
+    "false" otherwise.
+
+    Returns "true" if the game is waiting for votes, and "false" otherwise
     """
-
-    players = []
-
     if 'room_code' not in request['values']:
         return "Missing Room Code"
     room_code = request['values']['room_code']
@@ -32,13 +35,8 @@ def list_players (request):
     if len(room_rows) > 1:
         return "More than one room with this room code"
 
-    #dictionary of game and player data for room with given room code
     room_data = json.loads(room_rows[0][0])
-    #list of players currently in game
-    players = [player for player in room_data['player_data']]
-
-    if len(players) == 0:
-        return "No players in game currently"
-
-    # Joins the list of strings with commas in between.
-    return ",".join(players)
+    # Temporary Return Value
+    if room_data["game_data"]["in_lobby"]:
+        return "true"
+    return "false"

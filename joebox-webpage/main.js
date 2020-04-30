@@ -33,8 +33,6 @@ function start () {
   setInterval (loop, DT);
 }
 
-
-
 /**
  * @function loop - This function will be called periodically, every DT ms
  */
@@ -48,24 +46,27 @@ async function loop () {
 
 }
 
-
-
 /**
  * @function inputKeyDownHandler - Handles the key down event when someone is
  * typing into the input.
  *
- * @param  {Event} e Key Down Event data
+ * @param  {KeyboardEvent} e Key Down Event data
  */
 async function inputKeyDownHandler (e) {
-    
+
   // If they pressed enter, clear the input
   if (e.keyCode == 13) {
       enterRoomCode();
   }
 }
 
+/**
+ * @function inputKeyPressHandler - Whenever the user presses a button while
+ * focused on the input.
+ *
+ * @param  {KeyboardEvent} e Key Down Event data
+ */
 async function inputKeyPressHandler (e) {
-    
     if (e.keyCode >= 97 && e.keyCode <= 122) {
         if (!e.ctrlKey && !e.metaKey && !e.altKey) {
             let charCode = e.keyCode - 32;
@@ -76,8 +77,6 @@ async function inputKeyPressHandler (e) {
             e.preventDefault();
         }
     }
-    
-
 }
 
 async function inputButtonPressHandler () {
@@ -94,9 +93,10 @@ async function enterRoomCode () {
 
     // If the response is "true", proceed
     if (response.trim() == "true") {
+
         hideAllOthers('.game-container');
         $('.room-code').text(roomCode);
-        
+    
         response = await sendHttpRequest (
             "GET",
             SERVER_URL+"?action=in_lobby&room_code="+roomCode);
@@ -131,12 +131,13 @@ async function startGameButtonPressHandler() {
 async function displayPrompt () {
     let response = await sendHttpRequest (
         "GET",
+
         SERVER_URL+"?action=current_prompt&room_code="+roomCode);
     
     let whole_prompt = response.trim().split("=");
     let word = whole_prompt[0];
     let prompt = whole_prompt[1];
-    
+
     $('.word').text(word);
     $('.prompt').text(prompt);
 }
@@ -173,6 +174,16 @@ function hideAllOthers (container) {
     $(container).show();
 }
 
+
+/**
+ * @function dump - Prints to console the entire contents of the game data db
+ */
+function dump () {
+  sendHttpRequest(
+    "GET",
+    "https://608dev-2.net/sandbox/sc/team033/bluffalo/server.py?action=dump_data")
+    .then((r) => console.log(r));
+}
 
 
 /**

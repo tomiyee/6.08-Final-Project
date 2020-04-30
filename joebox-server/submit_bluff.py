@@ -25,7 +25,6 @@ def submit_bluff (request):
     see number of people who haven't submitted a bluff yet in Postman
     """
 
-
     #data from request: room code, player user name, and their bluff submitted
 
     try:
@@ -71,7 +70,7 @@ def submit_bluff (request):
 
 
     room['player_data'][user]["submitted"] = True
-    room['player_data'][user]["submission"] = bluff_submitted
+    room['player_data'][user]["submission"] = bluff_submitted.lower()
 
     all_players_submitted = True
     num_no_submission = 0 #players who haven't submitted yet
@@ -82,7 +81,7 @@ def submit_bluff (request):
 
     if all_players_submitted: #if all players submitted
         room['game_data']['waiting_for_submissions'] = False
-        room['game_data']['selecting_options'] = True
+        room['game_data']['waiting_for_votes'] = True
 
     # json dump: turns dictionary to json thing
     new_room_json = json.dumps(room)

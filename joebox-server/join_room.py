@@ -21,7 +21,6 @@ def join_room (request):
     9: one of the required parameters for post request is missing
     """
 
-
     # data from request: room code, player user name, and their bluff submitted
     # one of the parameters in POST missing
     if 'room_code' not in request['form']:
@@ -69,10 +68,14 @@ def join_room (request):
         return 'Game is not in lobby'
 
     # Initializes a simple dictionary for the user
-    room['player_data'][user] = {}
-    room['player_data'][user]["score"] = 0
-    room['player_data'][user]["submitted"] = False
-    room['player_data'][user]["submission"] = None
+    room['player_data'][user] = {
+       "score": 0,
+       "voted": False,
+       "voted_correctly": False,
+       "submitted": False,
+       "submission": None,
+       "votes_received": []
+    }
 
     # json dump: turns dictionary to json thing
     new_room_json = json.dumps(room)
@@ -83,9 +86,5 @@ def join_room (request):
     conn.close()
 
     players = [player for player in room['player_data']]
-    out = ''
-    for player in players:
-        out += player
-        out += ','
 
-    return out #string representing all usernames separated by ","
+    return ",".join(players) #string representing all usernames separated by ","
