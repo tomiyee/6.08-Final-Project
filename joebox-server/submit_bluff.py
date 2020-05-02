@@ -53,6 +53,7 @@ def submit_bluff (request):
 
     if user not in room['player_data']:
         return "player doesn't exist in game yet"
+
     if room['player_data'][user]["submitted"] == True:
         conn.commit() # commit commands
         conn.close() # close connection to database
@@ -68,6 +69,18 @@ def submit_bluff (request):
         conn.close() # close connection to database
         return "not waiting for submissions, can't submit bluffs right now"
 
+    ####### ADDED FOR WEEK 4 DELIVERABLE##################
+    game_data = room['game_data']
+    # current_word, current_meaning = game_data['current_word'], game_data['current_meaning']
+
+    round_number, question_number = game_data['round_number'], game_data['question_number']
+    word_number = (round_number-1)*3+question_number-1
+    current_word, current_meaning, current_ans = game_data['all_prompts'][word_number]
+
+    #if player submitted the right bluff
+    if bluff_submitted == current_ans:
+        return "You submitted the correct answer! Please change it :)"
+    ################################################################
 
     room['player_data'][user]["submitted"] = True
     room['player_data'][user]["submission"] = bluff_submitted.lower()
