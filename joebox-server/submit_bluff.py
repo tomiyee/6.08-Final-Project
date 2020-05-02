@@ -75,7 +75,7 @@ def submit_bluff (request):
     current_word, current_meaning, current_ans = game_data['all_prompts'][word_number]
 
     #if player submitted the correct answer
-    if bluff_submitted == current_ans:
+    if bluff_submitted.lower() == current_ans.lower():
         return "You submitted the correct answer! Please change it :)"
     ################################################################
 
