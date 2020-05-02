@@ -53,4 +53,4 @@ def score_rank (request):
         outstr.extend(tup[1])
 
     # Joins the list of strings with commas in between.
-    return ",".join(putstr)
+    return ",".join(outstr)
