@@ -12,6 +12,8 @@ def score_rank (request):
 
     Returns a comma-separated string of players along with their current get_scores
     sorted from highest to lowerst score in the specified room
+    For example: list of players[(Joe, 10), (Tom, 20)] should return:
+    'Tom,20,Joe,10'
     """
 
     #list of tuples of player name and their current score
@@ -45,12 +47,12 @@ def score_rank (request):
         return "No players in game currently"
 
     #list of tuples with the player name and their current score
-    sorted_scores = sorted(scores, key = lambda x: x[1])
+    sorted_scores = sorted(scores, key = lambda x: x[1], reverse = True)
 
     outstr = [] #list for printing purposes
     for tup in sorted_scores:
         outstr.append(tup[0])
-        outstr.append(tup[1])
+        outstr.append(str(tup[1]))
 
     # Joins the list of strings with commas in between.
     return ",".join(outstr)
