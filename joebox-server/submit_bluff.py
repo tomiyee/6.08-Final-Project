@@ -60,7 +60,12 @@ def submit_bluff (request):
         conn.close() # close connection to database
         return "not waiting for submissions, can't submit bluffs right now"
 
-<<<<<<< HEAD
+    # Forces the bluff_submitted to be strictly capital letters
+    bluff_submitted = bluff_submitted.upper()
+    for c in bluff_submitted:
+        if c not in "ABCDEFGHIJKLMNOPQRSTUVQXYZ":
+            return "Bluff can only have capital letters."
+
     ####### ADDED FOR WEEK 4 DELIVERABLE##################
     game_data = room['game_data']
     # current_word, current_meaning = game_data['current_word'], game_data['current_meaning']
@@ -73,14 +78,7 @@ def submit_bluff (request):
     if bluff_submitted == current_ans:
         return "You submitted the correct answer! Please change it :)"
     ################################################################
-=======
-    # Forces the bluff_submitted to be strictly capital letters
-    bluff_submitted = bluff_submitted.upper()
-    for c in bluff_submitted:
-        if c not in "ABCDEFGHIJKLMNOPQRSTUVQXYZ":
-            return "Bluff can only have capital letters."
->>>>>>> e8247573f6c9130593f68dd347ebebb1c912aa8b
-
+    
     room['player_data'][user]["submitted"] = True
     room['player_data'][user]["submission"] = bluff_submitted
 
