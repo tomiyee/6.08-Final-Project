@@ -12,15 +12,6 @@ def submit_bluff (request):
       String user      - The name of the player entered on ESP
       String bluff     - The text submission that the user entered on the ESP
 
-    Returns an error code if failed to add:
-    -1: unknown error, don't know what happened
-    1: one of the required parameters for post request is missing
-    2: room doesn't exist
-    3: game not waiting for submissions, can't submit bluff right now
-    9: if they already submitted a bluff this round
-    6: game in lobby, can't submit bluffs right now
-    8: player doesn't exist in game
-
     Returns number of people who haven't submitted bluff yet if successfully added
     see number of people who haven't submitted a bluff yet in Postman
     """
@@ -68,9 +59,14 @@ def submit_bluff (request):
         conn.close() # close connection to database
         return "not waiting for submissions, can't submit bluffs right now"
 
+    # Forces the bluff_submitted to be strictly capital letters
+    bluff_submitted = bluff_submitted.upper()
+    for c in bluff_submitted:
+        if c not in "ABCDEFGHIJKLMNOPQRSTUVQXYZ":
+            return "Bluff can only have capital letters."
 
     room['player_data'][user]["submitted"] = True
-    room['player_data'][user]["submission"] = bluff_submitted.lower()
+    room['player_data'][user]["submission"] = bluff_submitted
 
     all_players_submitted = True
     num_no_submission = 0 #players who haven't submitted yet

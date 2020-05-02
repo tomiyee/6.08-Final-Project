@@ -12,13 +12,6 @@ def join_room (request):
       String user      - The name of the player entered on ESP
 
     Returns a string, representing all usernames separated by ","
-    Error codes:
-    -1: unknown error
-    2: room does not exist
-    4: username already exists
-    5: game not in lobby: can't join right now
-    7: there is more than one room with this room code
-    9: one of the required parameters for post request is missing
     """
 
     # data from request: room code, player user name, and their bluff submitted
