@@ -20,6 +20,7 @@ from vote import vote
 from get_scores import get_scores
 from waiting_for_votes import waiting_for_votes
 from waiting_for_submissions import waiting_for_submissions
+from score_rank import score_rank
 
 # The database with game data for everyone
 bluffalo_db = '__HOME__/bluffalo/game_data.db'
@@ -49,6 +50,8 @@ def request_handler (request) :
             return get_scores(request)
         if action == "dump_data":
             return dump_data(request)
+        if action == "score_rank":
+            return score_rank(request)
         return "Unhandled GET action: " + action + ". Double check the action is spelled correctly."
 
     if request['method'] == 'POST':
