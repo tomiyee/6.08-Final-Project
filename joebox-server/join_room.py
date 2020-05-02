@@ -31,12 +31,13 @@ def join_room (request):
     room_code = request['form']['room_code']
     user = request['form']['user']
 
+    for c in user:
+        if c not in "ABCDEFGHIJKLMNOPQRSTUVQXYZ":
+            return "Username can only have capital letters."
+
     # connect to that database (will create if it doesn't already exist)
     conn = sqlite3.connect(bluffalo_db)
     connection = conn.cursor()
-
-    room_code = request['form']['room_code']
-    user = request['form']['user']
     # Fetch the JSON String from the SQL with the right room code
     rooms_json = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,)).fetchall()
 
