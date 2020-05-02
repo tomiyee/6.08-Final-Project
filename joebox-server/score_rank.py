@@ -48,7 +48,7 @@ def score_rank (request):
     sorted_scores = sorted(scores, key = lambda x: x[1])
 
     outstr = [] #list for printing purposes
-    for tup in sorted_score:
+    for tup in sorted_scores:
         outstr.extend(tup[0])
         outstr.extend(tup[1])
 
