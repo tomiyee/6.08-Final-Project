@@ -49,8 +49,8 @@ def score_rank (request):
 
     outstr = [] #list for printing purposes
     for tup in sorted_scores:
-        outstr.extend(tup[0])
-        outstr.extend(tup[1])
+        outstr.append(tup[0])
+        outstr.append(tup[1])
 
     # Joins the list of strings with commas in between.
     return ",".join(outstr)
