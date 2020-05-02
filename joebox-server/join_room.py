@@ -12,13 +12,6 @@ def join_room (request):
       String user      - The name of the player entered on ESP
 
     Returns a string, representing all usernames separated by ","
-    Error codes:
-    -1: unknown error
-    2: room does not exist
-    4: username already exists
-    5: game not in lobby: can't join right now
-    7: there is more than one room with this room code
-    9: one of the required parameters for post request is missing
     """
 
     # data from request: room code, player user name, and their bluff submitted
@@ -31,12 +24,13 @@ def join_room (request):
     room_code = request['form']['room_code']
     user = request['form']['user']
 
+    for c in user:
+        if c not in "ABCDEFGHIJKLMNOPQRSTUVQXYZ":
+            return "Username can only have capital letters."
+
     # connect to that database (will create if it doesn't already exist)
     conn = sqlite3.connect(bluffalo_db)
     connection = conn.cursor()
-
-    room_code = request['form']['room_code']
-    user = request['form']['user']
     # Fetch the JSON String from the SQL with the right room code
     rooms_json = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,)).fetchall()
 
