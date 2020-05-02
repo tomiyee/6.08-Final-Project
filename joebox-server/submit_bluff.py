@@ -74,11 +74,11 @@ def submit_bluff (request):
     word_number = (round_number-1)*3+question_number-1
     current_word, current_meaning, current_ans = game_data['all_prompts'][word_number]
 
-    #if player submitted the right bluff
+    #if player submitted the correct answer
     if bluff_submitted == current_ans:
         return "You submitted the correct answer! Please change it :)"
     ################################################################
-    
+
     room['player_data'][user]["submitted"] = True
     room['player_data'][user]["submission"] = bluff_submitted
 
