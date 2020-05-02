@@ -14,8 +14,8 @@ def score_rank (request):
     sorted from highest to lowerst score in the specified room
     """
 
-    #dictionary of player name and their current score
-    scores = {}
+    #list of tuples of player name and their current score
+    scores = []
 
     if 'room_code' not in request['values']:
         return "Missing Room Code"
@@ -38,9 +38,19 @@ def score_rank (request):
     room_data = json.loads(room_rows[0][0])
     #list of players currently in game
     players = [player for player in room_data['player_data']]
+    for player in room_data['player_data']:
+        scores.append((player, room_data['player_data'][player]['score']))
 
     if len(players) == 0:
         return "No players in game currently"
 
+    #list of tuples with the player name and their current score
+    sorted_scores = sorted(scores, key = lambda x: x[1])
+
+    outstr = [] #list for printing purposes
+    for tup in sorted_score:
+        outstr.extend(tup[0])
+        outstr.extend(tup[1])
+
     # Joins the list of strings with commas in between.
-    return ",".join(players)
+    return ",".join(putstr)
