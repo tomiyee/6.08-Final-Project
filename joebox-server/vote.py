@@ -77,6 +77,8 @@ def vote (request):
         if not room_data['player_data'][player]['voted']:
             num_no_vote += 1
     if num_no_vote == 0:
+        for player in room_data['player_data']:
+            room_data['player_data'][player]['voted'] = False
         # Do something to move on to the next stage. Idk man
         room_data["game_data"]['waiting_for_votes'] = False
         room_data["game_data"]['waiting_for_submissions'] = True

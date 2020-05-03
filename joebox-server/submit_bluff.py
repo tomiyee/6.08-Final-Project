@@ -82,6 +82,8 @@ def submit_bluff (request):
     if all_players_submitted: #if all players submitted
         room['game_data']['waiting_for_submissions'] = False
         room['game_data']['waiting_for_votes'] = True
+        for player in room['player_data']:
+            room['player_data'][player]['submitted'] = False
 
     # json dump: turns dictionary to json thing
     new_room_json = json.dumps(room)
