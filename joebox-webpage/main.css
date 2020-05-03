@@ -35,7 +35,7 @@ body {
   margin:0;
   background: #141414;
   font-family: montserrat;
-    
+
 }
 
 .error-room {
@@ -60,7 +60,7 @@ div {
 .prompt {
     font-size: 20px;
     max-width: 200px;
-    
+
 }
 
 .word {
@@ -90,4 +90,13 @@ div {
     font-family: montserrat;
     margin-top: 20px;
     border-radius: 10px;
+}
+
+.done {
+  font-weight:bold;
+  color: green;
+}
+
+.player-nametags {
+  transition: color 5s ease;
 }

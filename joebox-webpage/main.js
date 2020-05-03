@@ -7,9 +7,10 @@ const DT = 1000;
 let roomCodeInput;
 // The string that the user entered as the Room Code
 let roomCode;
+let roomData;
+
 // Makes sure that start() is called right away
 window.onload = start;
-
 
 /**
  * @function start - This function is called once, like the setup() function in
@@ -19,15 +20,13 @@ window.onload = start;
 function start () {
   // Insert Start Code Here
   roomCodeInput = $("#room-code-input");
-    $('#room-code-input').keypress(inputKeyPressHandler);
+  $('#room-code-input').keypress(inputKeyPressHandler);
   $('#room-code-input').keydown(inputKeyDownHandler);
   $('.game-container').hide();
-    $('.lobby-container').hide();
-    $('.error-room').hide();
-    $('.button-room-input').click(inputButtonPressHandler);
-    $('.button-start-game').click(startGameButtonPressHandler);
-    
-    
+  $('.lobby-container').hide();
+  $('.error-room').hide();
+  $('.button-room-input').click(inputButtonPressHandler);
+  $('.button-start-game').click(startGameButtonPressHandler);
 
   // Sets the loop to be called every DT ms
   setInterval (loop, DT);
@@ -38,12 +37,27 @@ function start () {
  */
 async function loop () {
   // 0. Do nothing if the user has not entered a room code
+  if (!roomCode)
+    return;
 
   // 1. Send a request to the server for game data
-  let resp = await sendHttpRequest("GET", SERVER_URL + "?action=in_lobby");
+  let resp = await sendHttpRequest("GET", SERVER_URL+"?action=dump_data&room_code=" + roomCode);
+  roomData = JSON.parse(resp);
 
-  // 2. Handle the response, displaying or hiding elements as necessary
+  // 2a. If in lobby, update the list of players
+  if (roomData['game_data']['in_lobby']) {
+    hideAllOthers('.lobby-container');
+    displayLobby();
+  }
 
+  // 2b If waiting for submissions, update list of waiting.
+  if (roomData['game_data']['waiting_for_submissions'] ||
+      roomData['game_data']['waiting_for_votes']) {
+    hideAllOthers('.game-container');
+    displayPrompt();
+    displayOptions();
+    displayPlayers();
+  }
 }
 
 /**
@@ -53,7 +67,6 @@ async function loop () {
  * @param  {KeyboardEvent} e Key Down Event data
  */
 async function inputKeyDownHandler (e) {
-
   // If they pressed enter, clear the input
   if (e.keyCode == 13) {
       enterRoomCode();
@@ -67,22 +80,34 @@ async function inputKeyDownHandler (e) {
  * @param  {KeyboardEvent} e Key Down Event data
  */
 async function inputKeyPressHandler (e) {
-    if (e.keyCode >= 97 && e.keyCode <= 122) {
-        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-            let charCode = e.keyCode - 32;
-            let start = e.target.selectionStart;
-            let end = e.target.selectionEnd;
-            e.target.value = e.target.value.substring(0, start) + String.fromCharCode(charCode) + e.target.value.substring(end);
-            e.target.setSelectionRange(start+1, start+1);
-            e.preventDefault();
-        }
+  if (e.keyCode >= 97 && e.keyCode <= 122) {
+    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+      let charCode = e.keyCode - 32;
+      let start = e.target.selectionStart;
+      let end = e.target.selectionEnd;
+      e.target.value = e.target.value.substring(0, start) + String.fromCharCode(charCode) + e.target.value.substring(end);
+      e.target.setSelectionRange(start+1, start+1);
+      e.preventDefault();
     }
+  }
 }
 
+/**
+ * @function inputButtonPressHandler - When the user presses the join room
+ * button, run the enterRoomCode function
+ */
 async function inputButtonPressHandler () {
     enterRoomCode();
 }
 
+/**
+ * @function enterRoomCode - Using the text in the room code input,
+ * 1. Send an HTTP request to check if the room code is valid
+ * 2. If it is, then we will join it.
+ * 3. If it is NOT, then we display the error message
+ *
+ * @return {type}  description
+ */
 async function enterRoomCode () {
 
     // Sends the HTTP request to check if the room code exists
@@ -91,29 +116,36 @@ async function enterRoomCode () {
       "GET",
       SERVER_URL+"?action=room_code_check&room_code="+roomCode);
 
-    // If the response is "true", proceed
-    if (response.trim() == "true") {
-
-        hideAllOthers('.game-container');
-        $('.room-code').text(roomCode);
-    
-        response = await sendHttpRequest (
-            "GET",
-            SERVER_URL+"?action=in_lobby&room_code="+roomCode);
-        if (response.trim() == "false") {
-            displayPrompt();
-        }
-        else {
-            hideAllOthers('.lobby-container');
-            displayLobby();
-        }
-    }
-    // If the room code does not exist, show the error
-    else {
+    // If the response is "false", she the error
+    if (response.trim() != "true") {
         $('.error-room').show();
+        roomCodeInput.val("");
+        return;
     }
+    // Otherwise, move on
+    $('.room-code').text(roomCode);
 
-    roomCodeInput.val("");
+    // Request the complete JSON data for the game
+    response = await sendHttpRequest (
+        "GET",
+        SERVER_URL+"?action=dump_data&room_code="+roomCode);
+    try {
+      roomData = JSON.parse(response);
+    } catch (e) {
+      console.log(response);
+      $('.error-room').show();
+      return;
+    }
+    // If in lobby, show the players.
+    if (roomData['game_data']['in_lobby']) {
+      hideAllOthers('.lobby-container');
+      displayLobby();
+    }
+    // Otherwise enter the game
+    else {
+      hideAllOthers('.game-container');
+      displayPrompt();
+    }
 }
 
 async function startGameButtonPressHandler() {
@@ -121,8 +153,7 @@ async function startGameButtonPressHandler() {
     let response = await sendHttpRequest (
       "POST",
       SERVER_URL,
-        "action=start_game&room_code="+roomCode
-        
+      "action=start_game&room_code=" + roomCode
     );
     hideAllOthers('.game-container');
     displayPrompt();
@@ -131,22 +162,22 @@ async function startGameButtonPressHandler() {
 async function displayPrompt () {
     let response = await sendHttpRequest (
         "GET",
-
         SERVER_URL+"?action=current_prompt&room_code="+roomCode);
-    
+
     let whole_prompt = response.trim().split("=");
     let word = whole_prompt[0];
     let prompt = whole_prompt[1];
 
     $('.word').text(word);
     $('.prompt').text(prompt);
+
 }
 
 async function displayLobby () {
     let response = await sendHttpRequest (
         "GET",
         SERVER_URL+"?action=list_players&room_code="+roomCode);
-    
+
     let all_players = response.trim().split(",");
     let left_players = [];
     let right_players = [];
@@ -158,22 +189,74 @@ async function displayLobby () {
             right_players.push(all_players[i]);
         }
     }
-    
+
     $('.left-players')[0].innerHTML=left_players.join("<br>");
     $('.right-players')[0].innerHTML=right_players.join("<br>");
-    
+
 //    $('.players').text(all_players);
 }
+
+async function displayOptions () {
+  // Get the bluffs and sorts them
+  let sortedOptions = [];
+  let playerData = roomData['player_data'];
+  for (let p in playerData)
+    sortedOptions.push(playerData[p]["submission"]);
+  // Adds the correct answer to the lsit
+  let gameData = roomData['game_data'];
+  let promptIndex = (gameData['round_number']-1)*3+gameData['question_number']-1;
+  sortedOptions.push(gameData['all_prompts'][promptIndex][2]);
+
+  sortedOptions.sort();
+  // Display the options in sorted order
+  let optionsList = $(".options-container");
+    optionsList.empty();
+  for (let i in sortedOptions) {
+    let li = $(document.createElement('li'));
+      li.text(sortedOptions[i]);
+      optionsList.append(li);
+  }
+}
+
+function displayPlayers () {
+  // Find out who has and has not voted
+  let playerRow = $(".player-voting-rows");
+
+  for(let p in roomData['player_data']) {
+    // If the player's nametag is not yet displayed, then create it
+    if ($('.player-nametag-' + p).length == 0) {
+      let nametag = $(document.createElement('span'));
+        nametag.addClass("player-nametags");
+        nametag.addClass("player-nametag-" + p);
+        nametag.text(p);
+        playerRow.append(nametag);
+    }
+    let nametag = $('.player-nametag-' + p);
+      nametag.removeClass('done');
+    // If game state is submitting, color names based on if they have submitted
+    if (roomData['game_data']['waiting_for_submissions'])
+      if (roomData['player_data'][p]['submitted'])
+        nametag.addClass("done");
+    // If game state is voting, color names based on if they have voted
+    if (roomData['game_data']['waiting_for_votes'])
+      if (roomData['player_data'][p]['voted'])
+        nametag.addClass('done');
+  }
+}
+
 
 function hideAllOthers (container) {
     $('.game-container').hide();
     $('.lobby-container').hide();
     $('.error-room').hide();
     $(".input-container").hide();
-    
+
     $(container).show();
 }
 
+function animateSumbittedBluffsPlayers () {
+  submittedPlayers = roomData['']
+}
 
 /**
  * @function dump - Prints to console the entire contents of the game data db

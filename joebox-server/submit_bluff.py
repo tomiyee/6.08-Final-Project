@@ -70,7 +70,7 @@ def submit_bluff (request):
 
 
     room['player_data'][user]["submitted"] = True
-    room['player_data'][user]["submission"] = bluff_submitted.lower()
+    room['player_data'][user]["submission"] = bluff_submitted.upper()
 
     all_players_submitted = True
     num_no_submission = 0 #players who haven't submitted yet
@@ -83,7 +83,7 @@ def submit_bluff (request):
         room['game_data']['waiting_for_submissions'] = False
         room['game_data']['waiting_for_votes'] = True
         for player in room['player_data']:
-            room['player_data'][player]['submitted'] = False
+            room['player_data'][player]['voted'] = False
 
     # json dump: turns dictionary to json thing
     new_room_json = json.dumps(room)
