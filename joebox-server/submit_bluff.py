@@ -12,15 +12,6 @@ def submit_bluff (request):
       String user      - The name of the player entered on ESP
       String bluff     - The text submission that the user entered on the ESP
 
-    Returns an error code if failed to add:
-    -1: unknown error, don't know what happened
-    1: one of the required parameters for post request is missing
-    2: room doesn't exist
-    3: game not waiting for submissions, can't submit bluff right now
-    9: if they already submitted a bluff this round
-    6: game in lobby, can't submit bluffs right now
-    8: player doesn't exist in game
-
     Returns number of people who haven't submitted bluff yet if successfully added
     see number of people who haven't submitted a bluff yet in Postman
     """
@@ -53,6 +44,7 @@ def submit_bluff (request):
 
     if user not in room['player_data']:
         return "player doesn't exist in game yet"
+
     if room['player_data'][user]["submitted"] == True:
         conn.commit() # commit commands
         conn.close() # close connection to database
@@ -68,6 +60,24 @@ def submit_bluff (request):
         conn.close() # close connection to database
         return "not waiting for submissions, can't submit bluffs right now"
 
+    # Forces the bluff_submitted to be strictly capital letters
+    bluff_submitted = bluff_submitted.upper()
+    for c in bluff_submitted:
+        if c not in "ABCDEFGHIJKLMNOPQRSTUVQXYZ":
+            return "Bluff can only have capital letters."
+
+    ####### ADDED FOR WEEK 4 DELIVERABLE##################
+    game_data = room['game_data']
+    # current_word, current_meaning = game_data['current_word'], game_data['current_meaning']
+
+    round_number, question_number = game_data['round_number'], game_data['question_number']
+    word_number = (round_number-1)*3+question_number-1
+    current_word, current_meaning, current_ans = game_data['all_prompts'][word_number]
+
+    #if player submitted the correct answer
+    if bluff_submitted.lower() == current_ans.lower():
+        return "You submitted the correct answer! Please change it :)"
+    ################################################################
 
     room['player_data'][user]["submitted"] = True
     room['player_data'][user]["submission"] = bluff_submitted.upper()

@@ -1,28 +1,26 @@
 import json
 import sqlite3
 import os
-import random
 
 bluffalo_db = os.path.dirname(__file__) + '/game_data.db'
 # Note json.loads(String) and json.dumps(Objects)
 
-def get_scores (request):
+def score_rank (request):
     """
     Given the GET request with:
-      String room_code - The characters that represent the room code
+      String room_code - The characters that rep the room code
 
-    This call should loop through all the player data and return a comma -
-    separated string, where every even-number item is the player name, and every
-    odd-number item is the score of the player that precedes it. For example, if
-    "Player1" had a score of 100, and "Player2" had a score of 200, then the
-    return value should be "Player1,100,Player2,200". The order of the players
-    does not matter.
-
-    Returns a comma-separated string of players and their scores
+    Returns a comma-separated string of players along with their current get_scores
+    sorted from highest to lowerst score in the specified room
+    For example: list of players[(Joe, 10), (Tom, 20)] should return:
+    'Tom,20,Joe,10'
     """
 
+    #list of tuples of player name and their current score
+    scores = []
+
     if 'room_code' not in request['values']:
-        return "Misssing Room Code"
+        return "Missing Room Code"
     room_code = request['values']['room_code']
 
 
@@ -41,10 +39,20 @@ def get_scores (request):
     #dictionary of game and player data for room with given room code
     room_data = json.loads(room_rows[0][0])
     #list of players currently in game
-    data = []
+    players = [player for player in room_data['player_data']]
     for player in room_data['player_data']:
-        data.append(player)
-        data.append(str(room_data['player_data'][player]['score']))
+        scores.append((player, room_data['player_data'][player]['score']))
+
+    if len(players) == 0:
+        return "No players in game currently"
+
+    #list of tuples with the player name and their current score
+    sorted_scores = sorted(scores, key = lambda x: x[1], reverse = True)
+
+    outstr = [] #list for printing purposes
+    for tup in sorted_scores:
+        outstr.append(tup[0])
+        outstr.append(str(tup[1]))
 
     # Joins the list of strings with commas in between.
-    return ",".join(data)
+    return ",".join(outstr)

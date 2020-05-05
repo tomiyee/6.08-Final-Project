@@ -47,7 +47,15 @@ def start_game (request):
     num_words = connection2.execute('''SELECT COUNT(*) FROM word_table;''').fetchone()[0]
     word_indices = random.sample(range(num_words), 7)
     words = [connection2.execute('''SELECT * FROM word_table LIMIT 1 OFFSET ?;''', (i,)).fetchone() for i in word_indices]
-    room_data['game_data']['all_prompts'] = words
+    # Forces all of the questions to be uppercase
+    prompts = []
+    for prompt in words:
+        p = []
+        for part in prompt:
+            p.append(part.upper())
+        prompts.append(p)
+
+    room_data['game_data']['all_prompts'] = prompts
     conn2.commit()
     conn2.close()
 
