@@ -16,7 +16,9 @@ def join_room (request):
       String token     - (Optional) The token unique to the player (for reconnect)
 
     tl;dr -> Join 1st time with room_code and user. Save the token you receive
-             Join 2nd time with room_code, user, and token
+             Join 2nd time with room_code, user, and token.
+                If successful with the token, will return "true,<state>" if the
+                user HAS NOT input a bluff/vote (<state> is either bluff or vote)
 
     If no token is provided:
         1. Checks if the username is valid (only capital letters)
@@ -34,9 +36,17 @@ def join_room (request):
            Usually, the username should be the same. If they don't match,
            then we will consider it a request to "change username."
         4. Allow the username to join the game regardless of state
-        4. Returns "Token: (8_char_token)" if all is successful
+        5. It will then check what state that the game is in and whether the user
+           needs to enter an input (i.e. bluff or vote)
 
-    Returns the user's unique token in the string format "Token: <8_char_token>"
+    Returns the user's unique token in the string format "Token: <8_char_token>",
+      or if a token was provided, then "true,<state>" or "false,<state>".
+      For example,
+        if the game is in lobby: "false,lobby"
+        if the game is voting: "true,vote" if the user has NOT voted yet
+                               "false,vote" if the user HAS voted already
+        if the game is bluffing: "true,bluff" if the user has NOT bluffed yet
+                                 "false,bluff" if the user HAS bluffed already
     """
 
     # data from request: room code, player user name, and their bluff submitted
@@ -103,7 +113,15 @@ def join_room (request):
             connection.execute('''UPDATE game_table SET game_data =? WHERE room_code =?;''', (new_room_json, room_code))
         conn.commit()
         conn.close()
-        return "Token: " + token
+
+        # If the user has already completed their action for the round ("")
+        if room['game_data']['in_lobby']:
+            return "false,lobby"
+        if room['game_data']['waiting_for_votes']:
+            return "true,vote" if not room['player_data']['voted'] else "false,vote"
+        if room['game_data']['waiting_for_submissions']:
+            return "true,bluff" if not room['player_data']['submitted'] else "false,bluff"
+        return "Server can't figure out the state..."
 
     # ------> No Token from here onwards
 

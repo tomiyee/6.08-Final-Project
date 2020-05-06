@@ -40,9 +40,20 @@ def start_game (request):
     room_data['game_data']['in_lobby'] = False
     room_data['game_data']['waiting_for_submissions'] = True
 
-    # (TODO) Trigger events that occur once the game starts, like setting the question
+    # Cleans up Player Data just in case we are replaying
+    for player in room_data['player_data']:
+        room_data['player_data'][player]['score'] = 0
+        room_data['player_data'][player]['voted'] = False
+        room_data['player_data'][player]['voted_correctly'] = False
+        room_data['player_data'][player]['submitted'] = False
+        room_data['player_data'][player]['votes_received'] = True
+        room_data['player_data'][player]['votes_received'] = []
+    # Resets the Round Number
+    room_data['game_data']['question_number'] = 1
+    room_data['game_data']['round_number'] = 1
 
-    conn2 = sqlite3.connect(word_db)  # connect to that database (will create if it doesn't already exist)
+
+    conn2 = sqlite3.connect(word_db)
     connection2 = conn2.cursor()
     num_words = connection2.execute('''SELECT COUNT(*) FROM word_table;''').fetchone()[0]
     word_indices = random.sample(range(num_words), 7)
