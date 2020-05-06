@@ -8,7 +8,7 @@ let roomCodeInput;
 // The string that the user entered as the Room Code
 let roomCode;
 let roomData;
-
+let animating = false;
 // Makes sure that start() is called right away
 window.onload = start;
 
@@ -43,6 +43,9 @@ async function loop () {
   // 1. Send a request to the server for game data
   let resp = await sendHttpRequest("GET", SERVER_URL+"?action=dump_data&room_code=" + roomCode);
   let newRoomData = JSON.parse(resp);
+  if (!roomData) {
+    roomData = newRoomData;
+  }
 
   // Going from voting to submitting
   if (!newRoomData['game_data']['waiting_for_votes'] && roomData['game_data']['waiting_for_votes']) {
@@ -55,28 +58,33 @@ async function loop () {
   roomData = JSON.parse(resp);
 
   // 2a. If in lobby, update the list of players
-  if (roomData['game_data']['in_lobby']) {
+  if (!animating && roomData['game_data']['in_lobby'] && roomData['game_data']['round_number'] != 3) {
     hideAllOthers('.lobby-container');
     displayLobby();
   }
 
   // 2b If waiting for submissions, update list of waiting.
-  if (roomData['game_data']['waiting_for_submissions'] ||
-      roomData['game_data']['waiting_for_votes']) {
+  if (!animating && (roomData['game_data']['waiting_for_submissions'] ||
+      roomData['game_data']['waiting_for_votes'])) {
     hideAllOthers('.game-container');
     displayPrompt();
-    displayOptions();
+      displayOptions();
+    if (roomData['game_data']['waiting_for_votes'])
+      $('.options-container').show();
+    else
+      $('.options-container').hide();
     displayPlayers();
   }
 }
 
-function onVoteEndHandler (old, new) {
+function onVoteEndHandler (old, _new) {
   //Start animation
 
   hideAllOthers(".score-container");
   $(".scoreboard").empty();
 
-  let sortedScores = [];
+  let oldSortedScores = [];
+  let newSortedScores = [];
   // Animations
   for(let p in old['player_data']) {
     // If the player's nametag is not yet displayed, then create it
@@ -86,10 +94,13 @@ function onVoteEndHandler (old, new) {
 
     row.addClass('scoreboard-row');
     row.addClass('scoreboard-row-' + p);
-
+    score.addClass('scoreboard-score-'+p);
+    // Make the name and score elements a child of the row element
     row.append(name);
     row.append(score);
-    sortedScores.append([p, old['player_data'][p]['score']]);
+    // Append data to the lists we will sort
+    oldSortedScores.push([p, old['player_data'][p]['score']]);
+    newSortedScores.push([p, _new['player_data'][p]['score']]);
 
     name.text(p);
     score.text(old['player_data'][p]['score']);
@@ -97,12 +108,33 @@ function onVoteEndHandler (old, new) {
     $(".scoreboard").append(row);
   }
 
+  oldSortedScores.sort(function(a,b) {return b[1]<a[1]?-1:1;});
+  newSortedScores.sort(function(a,b) {return b[1]<a[1]?-1:1;});
+  let ROW_HEIGHT = 32;
+  animating = true;
+  //Show old scores briefly for 2 seconds
+  for(let i in oldSortedScores) {
+    let playerName = oldSortedScores[i][0];
+    let row = $('.scoreboard-row-' + playerName);
+    row.css('top',i*ROW_HEIGHT+'px');
+  }
+
+  //Animate for 2 seconds
+  setTimeout(function () {
+    for(let i in newSortedScores) {
+      let playerName = newSortedScores[i][0];
+      let row = $('.scoreboard-row-' + playerName);
+      row.css('top',i*ROW_HEIGHT+'px');
+      $('.scoreboard-score-'+playerName).text(newSortedScores[i][1]);
+    }
+  }, 2000);
+
 
 
   // When we want to HIDE the score animation
   setTimeout(function () {
-    hideAllOthers(".game-container");
-  }, 5000);
+    animating = false;
+  }, 6000);
 }
 
 function onBluffEndHandler (e) {
@@ -281,15 +313,15 @@ function displayPlayers () {
         playerRow.append(nametag);
     }
     let nametag = $('.player-nametag-' + p);
-      nametag.removeClass('done');
+      nametag.removeClass('done').addClass('not-done');
     // If game state is submitting, color names based on if they have submitted
     if (roomData['game_data']['waiting_for_submissions'])
       if (roomData['player_data'][p]['submitted'])
-        nametag.addClass("done");
+        nametag.addClass("done").removeClass('not-done');
     // If game state is voting, color names based on if they have voted
     if (roomData['game_data']['waiting_for_votes'])
       if (roomData['player_data'][p]['voted'])
-        nametag.addClass('done');
+        nametag.addClass('done').removeClass('not-done');
   }
 }
 

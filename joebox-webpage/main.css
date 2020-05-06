@@ -93,19 +93,54 @@ div {
 }
 
 .done {
-  font-weight:bold;
-  color: green;
+  background: #6fd15e;
+}
+
+.not-done {
+  background: #ff8282;
 }
 
 .player-nametags {
-  transition: color 5s ease;
+  transition: background 2s ease, color 2s ease;
+  min-width:100px;
+  padding:5px;
+  margin:10px;
+  margin-top: 20px;
+  height:36px;
+  border-radius:5px;
+  font-weight: bold;
+  color: black;
 }
 
 .scoreboard {
-
+  position: relative;
+  font-size: 30px;
+  color: white;
+  width: 400px;
 }
 
 
-.score {
-  
+.scoreboard-row {
+  transition: top 2s ease;
+  position: absolute;
+  left:0;
+  right:0;
+  margin:auto;
+  width: 400px;
+}
+
+.scoreboard-row td {
+  width: 200px;
+}
+
+.options-container {
+  width:100px;
+  background:#222;
+  padding:30px;
+  border-radius:5px;
+  font-size:32;
+}
+
+.options-container li {
+  text-align:left;
 }
