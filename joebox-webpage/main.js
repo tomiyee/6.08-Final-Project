@@ -42,6 +42,16 @@ async function loop () {
 
   // 1. Send a request to the server for game data
   let resp = await sendHttpRequest("GET", SERVER_URL+"?action=dump_data&room_code=" + roomCode);
+  let newRoomData = JSON.parse(resp);
+
+  // Going from voting to submitting
+  if (!newRoomData['game_data']['waiting_for_votes'] && roomData['game_data']['waiting_for_votes']) {
+    onVoteEndHandler(roomData, newRoomData);
+   }
+
+   // if (newRoomData['game_data']['waiting_for_votes'] && roomData['game_data']['waiting_for_votes']) {
+   //   onVoteEndHandler();
+   //  }
   roomData = JSON.parse(resp);
 
   // 2a. If in lobby, update the list of players
@@ -58,6 +68,45 @@ async function loop () {
     displayOptions();
     displayPlayers();
   }
+}
+
+function onVoteEndHandler (old, new) {
+  //Start animation
+
+  hideAllOthers(".score-container");
+  $(".scoreboard").empty();
+
+  let sortedScores = [];
+  // Animations
+  for(let p in old['player_data']) {
+    // If the player's nametag is not yet displayed, then create it
+    let row = $(document.createElement('tr'));
+    let name = $(document.createElement('td'));
+    let score = $(document.createElement('td'));
+
+    row.addClass('scoreboard-row');
+    row.addClass('scoreboard-row-' + p);
+
+    row.append(name);
+    row.append(score);
+    sortedScores.append([p, old['player_data'][p]['score']]);
+
+    name.text(p);
+    score.text(old['player_data'][p]['score']);
+
+    $(".scoreboard").append(row);
+  }
+
+
+
+  // When we want to HIDE the score animation
+  setTimeout(function () {
+    hideAllOthers(".game-container");
+  }, 5000);
+}
+
+function onBluffEndHandler (e) {
+
 }
 
 /**
@@ -250,6 +299,7 @@ function hideAllOthers (container) {
     $('.lobby-container').hide();
     $('.error-room').hide();
     $(".input-container").hide();
+    $(".score-container").hide();
 
     $(container).show();
 }
