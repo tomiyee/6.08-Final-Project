@@ -38,6 +38,7 @@ char storedUser[100] = "";
 #define WAITINGSUBMISSION 10
 #define WAITINGVOTES 11
 #define OLDUSER 12
+#define RESTART 13
 
 int stateMain = 0;
 int choiceMain = 0;
@@ -607,6 +608,10 @@ void loop() {
       tft.setTextSize(1);
     }
 
+    tft.setCursor(0,100);
+    tft.print(submission_timer);
+
+    
     memset(old_submission,0,sizeof(old_submission));
     strcat(old_submission,submission);
     while (millis() - primary_timer < LOOP_PERIOD); //wait for primary timer to increment
@@ -752,20 +757,30 @@ void loop() {
         char * pointer;
         int index = 0;
         int player_num = 0;
+        char temp[20];
+        stateMain = RESTART;
+        Serial.println(response);
         pointer = strtok(response,",");
         while (pointer != NULL)
         { 
           player_num++;
-          char temp[20];
+          memset(temp,0,sizeof(temp));
           sprintf(temp,"%s",pointer);
-          strcmp(players[index],temp);
+          strcpy(players[index],temp);
+          Serial.println(pointer);
           pointer = strtok(NULL,",");
+          Serial.println(pointer);
           scores[index] = (int) pointer;
           pointer = strtok(NULL,",");
+          index++;
+          
         }
         tft.fillScreen(TFT_WHITE);
         printScoreScreen(player_num,scores,players);
-        
+        tft.setCursor(0,120);
+        tft.println("Play Again?");
+        tft.println("Yes: 1");
+        tft.println("No: unplug me idk");
       }
     }
   }
