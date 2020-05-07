@@ -1,5 +1,16 @@
 
 
+
+
+
+
+void writeToBytes(char* inputArray, byte* outputArray){
+  memset(outputArray,0,sizeof(outputArray));
+  for (int i =0; i < strlen(inputArray);i++){
+    outputArray[0] = (byte) inputArray[0];
+  }
+}
+
 /*----------------------------------
   char_append Function:
   Arguments:
