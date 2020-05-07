@@ -678,6 +678,11 @@ void loop() {
     }
   }
   else if (stateMain == VOTE){
+    if(millis()-last_post >1000){
+      last_post = millis();
+      submission_timer= submission_timer-1;
+    }
+    
     if (flag1 == 1){
       choice_vote = choice_vote-1;
       if (choice_vote == 0){
@@ -695,6 +700,7 @@ void loop() {
     tft.println(choice_vote);
     
     if (flag1 == 2){
+      submission_timer = 60;
       stateMain = WAITINGVOTES;
       char request[500];
       char body[150];
@@ -718,7 +724,11 @@ void loop() {
     
     
   }
-
+  else if (stateMain == RESTART){
+    if (flag1 == 1){
+      
+    }
+  }
   else if(stateMain == WAITINGVOTES){
     if ((millis() - last_post) > lobby_timer){
       last_post = millis();
