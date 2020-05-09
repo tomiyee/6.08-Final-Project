@@ -118,9 +118,9 @@ def join_room (request):
         if room['game_data']['in_lobby']:
             return "false,lobby"
         if room['game_data']['waiting_for_votes']:
-            return "true,vote" if not room['player_data']['voted'] else "false,vote"
+            return "true,vote" if not room['player_data'][user]['voted'] else "false,vote"
         if room['game_data']['waiting_for_submissions']:
-            return "true,bluff" if not room['player_data']['submitted'] else "false,bluff"
+            return "true,bluff" if not room['player_data'][user]['submitted'] else "false,bluff"
         return "Server can't figure out the state..."
 
     # ------> No Token from here onwards
