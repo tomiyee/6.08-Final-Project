@@ -159,3 +159,8 @@ div {
   border-bottom: 1px solid white;
   font-weight:bold;
 }
+
+.flash-on {
+  background: yellow;
+  color: black;
+}
