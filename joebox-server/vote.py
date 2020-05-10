@@ -29,82 +29,83 @@ def vote (request):
     user = request_form['user']
     choice_index = int(request_form['choice'])
 
-    conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
+    # Connect to the SQL Database and try to find the room_code
+    conn = sqlite3.connect(bluffalo_db)
     connection = conn.cursor()
     room_rows = connection.execute('''SELECT game_data FROM game_table WHERE room_code = ?;''', (room_code,)).fetchall()
-
+    # Return an error if there is not a room with the room code
     if len(room_rows) == 0:
-        conn.commit() # commit commands
-        conn.close() # close connection to database
+        conn.commit()
+        conn.close()
         return "Room does not exist"
+
+    # Loads the dictionary and the short cut variables
+    room_data = json.loads(room_rows[0][0])
+    game_data = room_data['game_data']
+    player_data = room_data['player_data']
 
     # Generates the set of alphebetically sorted bluffs
     bluffs = set()
-
-    room_data = json.loads(room_rows[0][0])
-
-    game_data = room_data['game_data']
-    round_number, question_number = game_data['round_number'], game_data['question_number']
-    word_number = (round_number-1)*3+question_number-1
-    current_word, current_meaning, current_ans = game_data['all_prompts'][word_number]
-    bluffs.add(current_ans)
-
-    for player in room_data['player_data']:
-        if not room_data['player_data'][player]['submitted']:
+    for player in player_data:
+        if not player_data[player]['submitted']:
             bluffs.add("No Submission")
         else:
-            bluffs.add(room_data['player_data'][player]['submission'])
-    bluffs.remove(room_data['player_data'][user]['submission'])
+            bluffs.add(player_data[player]['submission'])
+    bluffs.remove(player_data[user]['submission'])
+    # Add the Correct Answer
+    round_number, question_number = game_data['round_number'], game_data['question_number']
+    word_number = (round_number - 1) * 3 + question_number - 1
+    current_word, current_meaning, current_ans = game_data['all_prompts'][word_number]
+    bluffs.add(current_ans)
+    # Sorts all the options in alphabetical order
     bluffs = sorted(list(bluffs))
 
     if bluffs[choice_index] == current_ans:
-        room_data['player_data'][user]['voted_correctly'] = True
+        player_data[user]['voted_correctly'] = True
 
     # Finds all players whose bluff was the choice and appends the name of the user
-    for player in room_data['player_data']:
-        if not room_data['player_data'][player]['submitted']:
+    for player in player_data:
+        if not player_data[player]['submitted']:
             continue
         if room_data['player_data'][player]['submission'] == bluffs[choice_index]:
             room_data['player_data'][player]['votes_received'].append(user)
 
     # records that the user has votes
-    room_data['player_data'][user]['voted'] = True
+    player_data[user]['voted'] = True
 
-    # Check if everyone has finished voting, and if so, increment game number
-    # calculate new scores, and clear votes
-    num_no_vote = 0
-    for player in room_data['player_data']:
-        if not room_data['player_data'][player]['voted']:
-            num_no_vote += 1
+    # Count number of people who have not voted
+    num_no_vote = len([p for p in player_data if not player_data[p]['voted']])
+
+    # Handle Transition to Submission State
     if num_no_vote == 0:
+        # Reset the Submission Status of all the players in the game
         for player in room_data['player_data']:
-            room_data['player_data'][player]['submitted'] = False
-        # Do something to move on to the next stage. Idk man
+            player_data[player]['submitted'] = False
+
+        # Toggle the Game State Variables
         room_data["game_data"]['waiting_for_votes'] = False
         room_data["game_data"]['waiting_for_submissions'] = True
+
         # Tally Scores
-        for player in room_data['player_data']:
+        for player in player_data:
             # Points for fooling others
-            room_data['player_data'][player]['score'] += (
-                500 * room_data['game_data']['round_number'] * len(room_data['player_data'][player]['votes_received']))
+            player_data[player]['score'] += (
+                500 * game_data['round_number'] * len(room_data['player_data'][player]['votes_received']))
             # Points for right answer
-            room_data['player_data'][player]['score'] += (
-                1000 * room_data['player_data'][player]['voted_correctly'])
-            # Reset
-            room_data['player_data'][player]['votes_received'] = []
-            room_data['player_data'][player]['voted'] = False
+            player_data[player]['score'] += (
+                1000 * player_data[player]['voted_correctly'])
 
         # Move on to next question
-        if room_data['game_data']['question_number'] == 3:
-            room_data['game_data']['round_number'] += 1
-            room_data['game_data']['question_number'] = 1
-        elif room_data['game_data']['round_number'] == 3:
+        if game_data['question_number'] == 3:
+            game_data['round_number'] += 1
+            game_data['question_number'] = 1
+        elif game_data['round_number'] == 3:
             # Begin endgame
             room_data["game_data"]['waiting_for_submissions'] = False
             room_data["game_data"]['in_lobby'] = True
             pass
         else:
-            room_data['game_data']['question_number'] += 1
+            game_data['question_number'] += 1
 
     new_room_json = json.dumps(room_data)
 
