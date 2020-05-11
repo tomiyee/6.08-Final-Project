@@ -205,6 +205,10 @@ void server_post (char* action, char* body) {
   sprintf(request, "POST /sandbox/sc/team033/bluffalo/server.py HTTP/1.1\r\n");
   sprintf(request + strlen(request), "Host: %s\r\n", host);
   strcat(request, "Content-Type: application/x-www-form-urlencoded\r\n");
+
+  Serial.println("Body");
+  Serial.println(body);
+
   // Form the proper body
   char true_body[200];
   sprintf(true_body, "action=%s", action);
@@ -212,6 +216,9 @@ void server_post (char* action, char* body) {
     strcat(true_body, "&");
     strcat(true_body, body);
   }
+  Serial.println("True Body");
+  Serial.println(true_body);
+
   // Sends the POST request
   sprintf(request + strlen(request), "Content-Length: %d\r\n\r\n", strlen(true_body));
   strcat(request, true_body);
