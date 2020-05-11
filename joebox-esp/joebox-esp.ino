@@ -325,8 +325,8 @@ void loop() {
   
       // Sends a POST request to join the room
       char body[100];
-        add_key(body, "room_code", roomKey);
-        add_key(body, "user", user);
+      add_key(body, "room_code", roomKey);
+      add_key(body, "user", user);
       server_post("join_room", body);
   
       // Transition to the Lobby_Host State
@@ -344,8 +344,8 @@ void loop() {
   
         // Sends a POST request to join the room
         char body[100];
-          add_key(body, "room_code", roomKey);
-          add_key(body, "user", user);
+        add_key(body, "room_code", roomKey);
+        add_key(body, "user", user);
         server_post("join_room", body);
   
         // Saves the Token
