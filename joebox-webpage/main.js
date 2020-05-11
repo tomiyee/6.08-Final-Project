@@ -9,6 +9,9 @@ let roomCodeInput;
 let roomCode;
 let roomData;
 let animating = false;
+let loopIntervalId = -1;
+let winnerIntervalId = -1;
+
 // Makes sure that start() is called right away
 window.onload = start;
 
@@ -22,14 +25,12 @@ function start () {
   roomCodeInput = $("#room-code-input");
   $('#room-code-input').keypress(inputKeyPressHandler);
   $('#room-code-input').keydown(inputKeyDownHandler);
-  $('.game-container').hide();
-  $('.lobby-container').hide();
-  $('.error-room').hide();
+  hideAllOthers('.input-container');
   $('.button-room-input').click(inputButtonPressHandler);
   $('.button-start-game').click(startGameButtonPressHandler);
 
   // Sets the loop to be called every DT ms
-  setInterval (loop, DT);
+  loopIntervalId = setInterval (loop, DT);
 }
 
 /**
@@ -43,53 +44,79 @@ async function loop () {
   // 1. Send a request to the server for game data
   let resp = await sendHttpRequest("GET", SERVER_URL+"?action=dump_data&room_code=" + roomCode);
   let newRoomData = JSON.parse(resp);
-  if (!roomData) {
-    roomData = newRoomData;
-  }
+  // For the initial fetch from the server
+  if (!roomData) roomData = newRoomData;
 
-  // Going from voting to submitting
-  if (!newRoomData['game_data']['waiting_for_votes'] && roomData['game_data']['waiting_for_votes']) {
+  // 2. Check for Transitions to Animate
+  if (!newRoomData['game_data']['in_lobby'] && roomData['game_data']['in_lobby'])
+    onLobbyEndHandler(roomData, newRoomData);
+  if (!newRoomData['game_data']['waiting_for_votes'] && roomData['game_data']['waiting_for_votes'])
     onVoteEndHandler(roomData, newRoomData);
-   }
+  if (newRoomData['game_data'].round_number > roomData['game_data'].round_number)
+    onRoundEndHandler(roomData, newRoomData);
+  if (newRoomData['game_data']['in_lobby'] && !roomData['game_data']['in_lobby'])
+    onGameEndHandler(roomData, newRoomData);
 
-   // if (newRoomData['game_data']['waiting_for_votes'] && roomData['game_data']['waiting_for_votes']) {
-   //   onVoteEndHandler();
-   //  }
-  roomData = JSON.parse(resp);
+  roomData = newRoomData;
 
-  // 2a. If in lobby, update the list of players
+  // 3a. If in lobby, update the list of players
   if (!animating && roomData['game_data']['in_lobby'] && roomData['game_data']['round_number'] != 3) {
     hideAllOthers('.lobby-container');
     displayLobby();
   }
 
-  // 2b If waiting for submissions, update list of waiting.
+  // 3b. If waiting for submissions, update list of waiting.
   if (!animating && (roomData['game_data']['waiting_for_submissions'] ||
       roomData['game_data']['waiting_for_votes'])) {
     hideAllOthers('.game-container');
     displayPrompt();
-      displayOptions();
+    displayPlayers();
+    displayOptions();
     if (roomData['game_data']['waiting_for_votes'])
       $('.options-container').show();
     else
       $('.options-container').hide();
-    displayPlayers();
   }
 }
 
-function onVoteEndHandler (old, _new) {
-  //Start animation
+function onLobbyEndHandler (old, _new) {
+  animating = false;
+  // Cancel Winner Animation in case we restart the game
+  clearInterval(winnerIntervalId);
+}
 
+/**
+ * @function onVoteEndHandler - Triggers animations that happen after everyone
+ * has voted, like showing how the rank has changed
+ *
+ * @param  {type} old  The old game data dictionary
+ * @param  {type} _new The new game data dictionary
+ */
+function onVoteEndHandler (old, _new) {
+  // Shows the container
   hideAllOthers(".score-container");
   $(".scoreboard").empty();
 
   let oldSortedScores = [];
   let newSortedScores = [];
-  // Animations
+
+  // Adds a row for the Correct Answer
+  let r = old['game_data']['round_number'];
+  let q = old['game_data']['question_number'];
+  let ans = old['game_data']['all_prompts'][(r-1)*3+q-1][2];
+  let ans_row = $(document.createElement('tr'))
+    .append($(document.createElement('td')).text('ANSWER'))
+    .append($(document.createElement('td')).text(ans))
+    .append($(document.createElement('td')).text('+' + r*1000))
+    .addClass("correct-answer")
+    .addClass('scoreboard-row');
+  $(".scoreboard").append(ans_row);
+  // Adds a row for each of the other players
   for(let p in old['player_data']) {
     // If the player's nametag is not yet displayed, then create it
     let row = $(document.createElement('tr'));
     let name = $(document.createElement('td'));
+    let bluff = $(document.createElement('td'));
     let score = $(document.createElement('td'));
 
     row.addClass('scoreboard-row');
@@ -97,12 +124,14 @@ function onVoteEndHandler (old, _new) {
     score.addClass('scoreboard-score-'+p);
     // Make the name and score elements a child of the row element
     row.append(name);
+    row.append(bluff);
     row.append(score);
     // Append data to the lists we will sort
     oldSortedScores.push([p, old['player_data'][p]['score']]);
     newSortedScores.push([p, _new['player_data'][p]['score']]);
-
+    // Updates the contents
     name.text(p);
+    bluff.text(old['player_data'][p]['submission'])
     score.text(old['player_data'][p]['score']);
 
     $(".scoreboard").append(row);
@@ -110,26 +139,25 @@ function onVoteEndHandler (old, _new) {
 
   oldSortedScores.sort(function(a,b) {return b[1]<a[1]?-1:1;});
   newSortedScores.sort(function(a,b) {return b[1]<a[1]?-1:1;});
-  let ROW_HEIGHT = 32;
+
+  let ROW_HEIGHT = 40;
   animating = true;
   //Show old scores briefly for 2 seconds
   for(let i in oldSortedScores) {
     let playerName = oldSortedScores[i][0];
     let row = $('.scoreboard-row-' + playerName);
-    row.css('top',i*ROW_HEIGHT+'px');
+    row.css('top', i * ROW_HEIGHT + ROW_HEIGHT + 10 + 'px');
   }
 
-  //Animate for 2 seconds
+  // Start the 2 second animation 2 seconds after the beginning
   setTimeout(function () {
     for(let i in newSortedScores) {
       let playerName = newSortedScores[i][0];
       let row = $('.scoreboard-row-' + playerName);
-      row.css('top',i*ROW_HEIGHT+'px');
-      $('.scoreboard-score-'+playerName).text(newSortedScores[i][1]);
+      row.css('top', i * ROW_HEIGHT + ROW_HEIGHT + 10 + 'px');
+      $('.scoreboard-score-' + playerName).text(newSortedScores[i][1]);
     }
   }, 2000);
-
-
 
   // When we want to HIDE the score animation
   setTimeout(function () {
@@ -137,8 +165,54 @@ function onVoteEndHandler (old, _new) {
   }, 6000);
 }
 
-function onBluffEndHandler (e) {
+/**
+ * @function onRoundEndHandler - Triggers animations that happen after a round
+ * ends, like displaying the announcement of a new round
+ *
+ * @param  {type} old  The old game data dictionary
+ * @param  {type} _new The new game data dictionary
+ */
+function onRoundEndHandler (old, _new) {
+  setTimeout(() => {
+    animating = true;
+    // Insert some animation
 
+    // ...
+  }, 6000);
+
+  // Finished Animations
+  setTimeout(() => {
+    animating = false;
+  }, 7000); // TODO add the duration of the animation
+}
+
+/**
+ * @function onGameEndHandler - Triggers animations that happen when the game
+ * ends like displaying the rankings
+ *
+ * @param  {type} old  The old game data dictionary
+ * @param  {type} _new The new game data dictionary
+ */
+function onGameEndHandler (old, _new) {
+  let best_score = Number.NEGATIVE_INFINITY;
+  let best_player;
+  for (let player in _new['player_data']) {
+    if (_new['player_data'][player]['score'] > best_score) {
+      best_score = _new['player_data'][player]['score'];
+      best_player = player;
+    }
+  }
+  setTimeout(() => {
+    hideAllOthers(".score-container");
+    animating = true;
+    winnerIntervalId = setInterval(() => {
+      let winner = $('.scoreboard-row-' + best_player);
+      if (winner.hasClass('flash-on'))
+        winner.removeClass('flash-on')
+      else
+        winner.addClass('flash-on')
+    }, 500);
+  }, 6100);
 }
 
 /**
@@ -229,6 +303,10 @@ async function enterRoomCode () {
     }
 }
 
+/**
+ * @function startGameButtonPressHandler - Sends a post request to the server
+ * with the start_game action for the current room
+ */
 async function startGameButtonPressHandler() {
     // Sends the HTTP request to check if the room code exists
     let response = await sendHttpRequest (
@@ -240,6 +318,10 @@ async function startGameButtonPressHandler() {
     displayPrompt();
 }
 
+/**
+ * @function displayPrompt - Makes a get request to fetch the current room's
+ * prompt and displays it in the game-container
+ */
 async function displayPrompt () {
     let response = await sendHttpRequest (
         "GET",
@@ -251,33 +333,35 @@ async function displayPrompt () {
 
     $('.word').text(word);
     $('.prompt').text(prompt);
-
 }
 
+/**
+ * @function displayLobby - While the server is in lobby, this method displays
+ * the names of people in the lobby in two columns
+ */
 async function displayLobby () {
     let response = await sendHttpRequest (
         "GET",
         SERVER_URL+"?action=list_players&room_code="+roomCode);
-
     let all_players = response.trim().split(",");
     let left_players = [];
     let right_players = [];
     for (let i = 0; i < all_players.length; i++) {
-        if (i % 2 == 0) {
+        if (i % 2 == 0)
             left_players.push(all_players[i]);
-        }
-        else {
+        else
             right_players.push(all_players[i]);
-        }
     }
 
     $('.left-players')[0].innerHTML=left_players.join("<br>");
     $('.right-players')[0].innerHTML=right_players.join("<br>");
-
-//    $('.players').text(all_players);
 }
 
-async function displayOptions () {
+/**
+ * @function displayOptions - Reveals the list of options which the players can
+ * collectively choose from.
+ */
+function displayOptions () {
   // Get the bluffs and sorts them
   let sortedOptions = [];
   let playerData = roomData['player_data'];
@@ -299,6 +383,12 @@ async function displayOptions () {
   }
 }
 
+/**
+ * @function displayPlayers - Cerates the nametags if they dont exist, and then
+ * sets the color based on the current server state and whether the player has
+ * done the required action, like bluffing when the server is
+ * 'waiting_for_submissions' and boting when the server is 'waiting_for_votes'
+ */
 function displayPlayers () {
   // Find out who has and has not voted
   let playerRow = $(".player-voting-rows");
@@ -325,7 +415,12 @@ function displayPlayers () {
   }
 }
 
-
+/**
+ * @function hideAllOthers - Automatically hides top level containers before
+ * revealing the container with the given class, with the selector symbol
+ *
+ * @param  {String} container The css selector for the container to show
+ */
 function hideAllOthers (container) {
     $('.game-container').hide();
     $('.lobby-container').hide();
@@ -334,10 +429,6 @@ function hideAllOthers (container) {
     $(".score-container").hide();
 
     $(container).show();
-}
-
-function animateSumbittedBluffsPlayers () {
-  submittedPlayers = roomData['']
 }
 
 /**
@@ -349,7 +440,6 @@ function dump () {
     "https://608dev-2.net/sandbox/sc/team033/bluffalo/server.py?action=dump_data")
     .then((r) => console.log(r));
 }
-
 
 /**
  * @function sendHttpRequest - Handles sending HTTP Requests and wraps the process

@@ -58,7 +58,7 @@ def join_room (request):
 
     room_code = request['form']['room_code']
     user = request['form']['user']
-
+    # Check that the username only has capital letters
     alphabet = "ABCDEFGHIJKLMNOPQRSTUVQXYZ"
     for c in user:
         if c not in alphabet:
@@ -84,13 +84,15 @@ def join_room (request):
 
     # json load: turns json file into python dictionary
     room = json.loads(rooms_json[0][0])
+    game_data = room['game_data']
+    player_data = room['player_data']
 
     # Prioritize Handling the Token First
     if 'token' in request['form']:
         token = request['form']['token']
         player_with_token = None
-        for player in room['player_data']:
-            if room['player_data'][player]['token'] == token:
+        for player in player_data:
+            if player_data[player]['token'] == token:
                 player_with_token = player
                 break
         if player_with_token == None:
@@ -100,13 +102,13 @@ def join_room (request):
 
         # If the names don't match, take the new username, remove old player
         if player_with_token != user:
-            for player in room['player_data']:
+            for player in player_data:
                 if player == user:
                     conn.commit()
                     conn.close()
                     return "Username already exists"
-            room['player_data'][user] = room['player_data'][player_with_token]
-            room['player_data'].pop(player_with_token, None)
+            player_data[user] = player_data[player_with_token]
+            player_data.pop(player_with_token, None)
 
             new_room_json = json.dumps(room)
             #update SQL with updated json room data
@@ -115,30 +117,30 @@ def join_room (request):
         conn.close()
 
         # If the user has already completed their action for the round ("")
-        if room['game_data']['in_lobby']:
+        if game_data['in_lobby']:
             return "false,lobby"
-        if room['game_data']['waiting_for_votes']:
-            return "true,vote" if not room['player_data'][user]['voted'] else "false,vote"
-        if room['game_data']['waiting_for_submissions']:
-            return "true,bluff" if not room['player_data'][user]['submitted'] else "false,bluff"
+        if game_data['waiting_for_votes']:
+            return "true,vote" if not player_data[user]['voted'] else "false,vote"
+        if game_data['waiting_for_submissions']:
+            return "true,bluff" if not player_data[user]['submitted'] else "false,bluff"
         return "Server can't figure out the state..."
 
-    # ------> No Token from here onwards
+    # ------> No Token Provided Handled From Here Onwards
 
     # can't join room under the same username, username already exists
-    if user in room['player_data']:
+    if user in player_data:
         conn.commit()
         conn.close()
         return 'Username already exists'
 
     # can't join room while game is not in lobby
-    if not room['game_data']['in_lobby']:
+    if not game_data['in_lobby']:
         conn.commit()
         conn.close()
         return 'Game is not in lobby'
 
     existing_tokens = set()
-    for player in room['player_data']:
+    for player in player_data:
         existing_tokens.add(room['player_data'][player]['token'])
 
     # Generate a random token to uniquely ID this player
