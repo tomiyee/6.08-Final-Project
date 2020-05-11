@@ -36,7 +36,7 @@ char roomKey[100] = {0};
 char prevRoomKey[100] = {0};
 
 //Variable used to keep track of whether the user is a host or not:
-boolean host = false;
+boolean isUserHost = false;
 
 
 //The following is for the EEPROM functionality of the ESP:
@@ -292,7 +292,7 @@ void loop() {
       else if (flag2 == 1){
         if (choiceMain == 0){
           stateMain = CREATE;
-          host = true;
+          isUserHost = true;
           tft.setCursor(3,3);
           tft.print("Fetching room key...");
         }
@@ -763,7 +763,7 @@ void loop() {
       }
       break;
     case RESTART:
-      if (flag1 == 1 && host){
+      if (flag1 == 1 && isUserHost){
         roundNumber = 1;
         stateMain = LOBBY_HOST;
         tft.setCursor(35,3);
@@ -771,9 +771,9 @@ void loop() {
         tft.print(roomKey);
         tft.setTextSize(1);
         tft.setCursor(3,20);
-        tft.println("Long 1: Start Game")
+        tft.println("Long 1: Start Game");
       }
-      else if(flag1 == 1 && !host){
+      else if(flag1 == 1 && !isUserHost){
         roundNumber = 1;
         stateMain = LOBBY_GUEST;
         tft.setCursor(35,3);
