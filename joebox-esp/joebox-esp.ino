@@ -245,6 +245,10 @@ void setup() {
 
 
 void loop() {
+  // Remove trailing white space from the room key
+  if(strlen(roomKey) > 0 && roomKey[strlen(roomKey)-1] == ' ')
+    roomKey[strlen(roomKey)-1] = '\0';
+
   float x, y;
   get_angle(&x, &y); //get angle values
   int flag1 = button1.update(); //get button value
@@ -403,24 +407,23 @@ void loop() {
       if ((millis() - last_post) > lobby_timer){
         memset(response,0,sizeof(response));
         last_post = millis();
-        char request[500];
-        sprintf(request, "GET /sandbox/sc/team033/bluffalo/server.py?action=list_players&room_code=%s HTTP/1.1\r\n",roomKey);
 
-        sprintf(request + strlen(request), "Host: %s\r\n\r\n", host);
-        do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+        // GET request to check the list
+        body[0] = '\0';
+        add_key(body, "room_code", roomKey);
+        server_get("list_players", body);
+
         char * pointer;
         num_players = 0;
         char output[100];
         pointer = strtok(response,",");
         tft.setCursor(0,30);
-        while (pointer != NULL)
-        {
+        while (pointer != NULL) {
           memset(output,0,sizeof(output));
           num_players++;
           sprintf(output,"%d: %s",num_players,pointer);
           tft.println(output);
           pointer = strtok(NULL,",");
-
         }
       }
 
@@ -433,11 +436,10 @@ void loop() {
         server_post("start_game", body);
 
         // Sends a request to the same room for the current prompt
-        char request[150];
-        sprintf(request,"GET /sandbox/sc/team033/bluffalo/server.py?action=current_prompt&room_code=%s HTTP/1.1\r\n",roomKey);
-        sprintf(request + strlen(request), "Host: %s\r\n\r\n", host);
-        do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
-        response[strlen(response)-1]='\0';
+
+        body[0] = '\0';
+        add_key(body, "room_code", roomKey);
+        server_get("current_prompt", body);
 
         tft.fillScreen(TFT_WHITE);
         tft.setCursor(3,3);
@@ -453,13 +455,10 @@ void loop() {
       if ((millis() - last_post) > lobby_timer){
         memset(response,0,sizeof(response));
         last_post = millis();
-
-        char request[500];
-
-        // Sends the Current Prompt Request
+        // Sends the list_players Request
         body[0] = '\0';
         add_key(body, "room_code", roomKey);
-        server_get("current_prompt", body);
+        server_get("list_players", body);
 
         char * pointer;
         num_players = 0;
@@ -481,7 +480,6 @@ void loop() {
 
         if (strcmp(response,"false") == 0){
           stateMain = STARTGAME;
-          char request[500];
 
           // Sends the Current Prompt Request
           body[0] = '\0';
@@ -527,16 +525,14 @@ void loop() {
       if (flag2 == 1 || submission_timer <=0){
         submission_timer = 60;
         stateMain = WAITINGSUBMISSION;
-        char request[500];
-        body[0] = '\0';
-        sprintf(body,"action=submit_bluff&room_code=%s&user=%s&bluff=%s",roomKey,user,submission);
-        sprintf(request,"POST /sandbox/sc/team033/bluffalo/server.py HTTP/1.1\r\n");
-        sprintf(request + strlen(request), "Host: %s\r\n", host);
-        strcat(request, "Content-Type: application/x-www-form-urlencoded\r\n");
-        sprintf(request + strlen(request), "Content-Length: %d\r\n\r\n", strlen(body));
-        strcat(request,body);
 
-        do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+        // Sends a Submit Bluff request
+        body[0] = '\0';
+        add_key(body, "room_code", roomKey);
+        add_key(body, "user", user);
+        add_key(body, "bluff", submission);
+        server_post("submit_bluff", body);
+
         tft.fillScreen(TFT_WHITE);
 
         tft.setCursor(3,10);
@@ -601,16 +597,17 @@ void loop() {
       if (flag1 == 2){
         submission_timer = 60;
         stateMain = WAITINGVOTES;
-        char request[500];
-        body[0] = '\0';
-        sprintf(body,"action=vote&room_code=%s&user=%s&choice=%d",roomKey,user,choice_vote-1);
-        sprintf(request,"POST /sandbox/sc/team033/bluffalo/server.py HTTP/1.1\r\n");
-        sprintf(request + strlen(request), "Host: %s\r\n", host);
-        strcat(request, "Content-Type: application/x-www-form-urlencoded\r\n");
-        sprintf(request + strlen(request), "Content-Length: %d\r\n\r\n", strlen(body));
-        strcat(request,body);
 
-        do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+        // Convert the choice into string format
+        char choice[6];
+        sprintf(choice, "%d", choice_vote-1);
+        // Sends the choice to the server as a post request
+        body[0] = '\0';
+        add_key(body, "room_code", roomKey);
+        add_key(body, "user", user);
+        add_key(body, "choice", choice);
+        server_post("vote", body);
+
         tft.fillScreen(TFT_WHITE);
 
         tft.setCursor(3,10);
