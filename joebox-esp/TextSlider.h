@@ -3,7 +3,7 @@
 #include "Arduino.h"
 
 class TextSlider {
-    char alphabet[50] = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    char alphabet[50] = " ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     char query_string[50] = {0};
     int char_index;
     int state;

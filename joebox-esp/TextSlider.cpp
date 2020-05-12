@@ -15,9 +15,10 @@ void TextSlider::update (float angle, int a_button, int b_button, char* output) 
     char_index = 0;
     return;
   }
-  if (b_button == 1) {
+  // Short press b, delete the most recent char
+  if (b_button == 1)
     query_string[strlen(query_string)-1] = '\0';
-  }
+  
   // Increment or decrement the char index appropriately
   if (abs(angle) > angle_threshold && millis() - scrolling_timer >= scrolling_threshold) {
     if (angle > 0)
