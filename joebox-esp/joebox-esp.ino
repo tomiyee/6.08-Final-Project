@@ -17,8 +17,8 @@ const int LOOP_PERIOD = 40;
 MPU6050 imu; //imu object called, appropriately, imu
 
 
-char network[] = "ATT8CkJ3vp";
-char password[] = "9#sj4c%i7nbm";
+char network[] = "wavesandwarehouses";
+char password[] = "G0PiggyTime99!";
 
 
 //The followin are for ESP inputs via the gyro:
@@ -453,45 +453,40 @@ void loop() {
       if ((millis() - last_post) > lobby_timer){
         memset(response,0,sizeof(response));
         last_post = millis();
-        char request[500];
-        sprintf(request, "GET /sandbox/sc/team033/bluffalo/server.py?action=list_players&room_code=%s HTTP/1.1\r\n",roomKey);
 
-        sprintf(request + strlen(request), "Host: %s\r\n\r\n", host);
-        do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+        char request[500];
+
+        // Sends the Current Prompt Request
+        body[0] = '\0';
+        add_key(body, "room_code", roomKey);
+        server_get("current_prompt", body);
+
         char * pointer;
         num_players = 0;
         char output[100];
         pointer = strtok(response,",");
         tft.setCursor(0,30);
-        while (pointer != NULL)
-        {
+        while (pointer != NULL) {
           memset(output,0,sizeof(output));
           num_players++;
           sprintf(output,"%d: %s",num_players,pointer);
           tft.println(output);
           pointer = strtok(NULL,",");
-
         }
 
+        // Sends a Get Request to check if in lobby
+        body[0] = '\0';
+        add_key(body, "room_code", roomKey);
+        server_get("in_lobby", body);
 
-        memset(request,0,sizeof(request));
-        sprintf(request, "GET /sandbox/sc/team033/bluffalo/server.py?action=in_lobby&room_code=%s HTTP/1.1\r\n",roomKey);
-
-        sprintf(request + strlen(request), "Host: %s\r\n\r\n", host);
-        do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
-        response[strlen(response)-1]='\0';
         if (strcmp(response,"false") == 0){
           stateMain = STARTGAME;
           char request[500];
-          body[0] = '\0';
-          sprintf(body,"action=current_prompt&room_code=%s",roomKey);
-          sprintf(request,"POST /sandbox/sc/team033/bluffalo/server.py HTTP/1.1\r\n");
-          sprintf(request + strlen(request), "Host: %s\r\n", host);
-          strcat(request, "Content-Type: application/x-www-form-urlencoded\r\n");
-          sprintf(request + strlen(request), "Content-Length: %d\r\n\r\n", strlen(body));
-          strcat(request,body);
 
-          do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+          // Sends the Current Prompt Request
+          body[0] = '\0';
+          add_key(body, "room_code", roomKey);
+          server_get("current_prompt", body);
 
           tft.setCursor(3,3);
           memset(old_prompt,0,sizeof(old_prompt));
@@ -514,16 +509,9 @@ void loop() {
       fibbage.update(-y,flag1,submission);
       if (strcmp(submission,old_submission) != 0){
         tft.fillRect(0,50,128,20,TFT_WHITE);
-        if (strcmp(submission,"Long Press 1 to Start!") != 0){
-          tft.setTextSize(1);
-          tft.setCursor(3,50);
-        }
-        else{
-          tft.setTextSize(1);
-          tft.setCursor(3,50);
-        }
-        tft.print(submission);
         tft.setTextSize(1);
+        tft.setCursor(3,50);
+        tft.print(submission);
       }
 
       tft.setCursor(0,130);
@@ -560,16 +548,9 @@ void loop() {
       userInputer.update(-y,flag1,user);
       if (strcmp(user,old_user) != 0){
         tft.fillRect(0,50,128,20,TFT_WHITE);
-        if (strcmp(user,"Long Press 1 to Start!") != 0){
-          tft.setTextSize(1);
-          tft.setCursor(3,50);
-        }
-        else{
-          tft.setTextSize(1);
-          tft.setCursor(3,50);
-        }
-        tft.print(user);
         tft.setTextSize(1);
+        tft.setCursor(3,50);
+        tft.print(user);
       }
 
       if (flag2 == 1){
