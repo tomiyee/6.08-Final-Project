@@ -17,8 +17,8 @@ const int LOOP_PERIOD = 40;
 MPU6050 imu; //imu object called, appropriately, imu
 
 
-char network[] = "wavesandwarehouses";
-char password[] = "G0PiggyTime99!";
+char network[] = "ATT8CkJ3vp";
+char password[] = "9#sj4c%i7nbm";
 
 
 //The followin are for ESP inputs via the gyro:
@@ -189,10 +189,6 @@ class FibbageGetter {
         if(button == 1){//short press, add new letter to query
           strcat(query_string, holder);
           char_index = 0;
-        }
-        else if(button == 2){//long press
-          memset(output, 0, sizeof(output));
-          state = 2;
         }
       }
       else if(state == 2){
@@ -502,6 +498,7 @@ void loop() {
           add_key(body, "room_code", roomKey);
           server_get("current_prompt", body);
 
+          tft.fillScreen(TFT_WHITE);
           tft.setCursor(3,3);
           memset(old_prompt,0,sizeof(old_prompt));
           strcpy(old_prompt,response);
@@ -511,6 +508,7 @@ void loop() {
           tft.println("Input Response:");
           tft.println("1: select");
           tft.println("2: submit");
+          
         }
       }
       break;
