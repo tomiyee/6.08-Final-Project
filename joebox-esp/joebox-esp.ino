@@ -96,107 +96,6 @@ void get_angle(float* x, float* y) {
   *y = imu.accelCount[1] * imu.aRes;
 }
 
-void lookup(char* query, char* response, int response_size) {
-  char request_buffer[200];
-  //CHANGE TO TARGET SERVER SCRIPT, to be determined later
-  sprintf(request_buffer, "GET /sandbox/sc/person/wiki_getter.py?topic=%s HTTP/1.1\r\n", query);
-  strcat(request_buffer, "Host: 608dev-2.net\r\n");
-  strcat(request_buffer, "\r\n"); //new line from header to body
-
-  do_http_request("608dev-2.net", request_buffer, response, response_size, RESPONSE_TIMEOUT, true);
-}
-
-
-class FibbageGetter {
-    char alphabet[50] = " ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    char message[400] = {0}; //contains previous query response
-    char query_string[50] = {0};
-    int char_index;
-    int state;
-    unsigned long scrolling_timer;
-    const int scrolling_threshold = 150;
-    const float angle_threshold = 0.3;
-  public:
-    FibbageGetter() {
-      state = 0;
-      memset(message, 0, sizeof(message));
-      strcat(message, "Long Press 1 to Start!");
-      char_index = 0;
-      scrolling_timer = millis();
-    }
-    void reset(){
-      state = 0;
-      memset(message, 0, sizeof(message));
-      strcat(message, "Long Press 1 to Start!");
-      char_index = 0;
-      scrolling_timer = millis();
-      memset(query_string,0,sizeof(query_string));
-    }
-    void update(float angle, int button, char* output) {
-      //Serial.print(state);
-      char holder[20] = {0};
-      if(state == 0){
-        memset(output, 0, sizeof(output));
-        strcat(output, message);
-        if(button==2){ //long press
-          scrolling_timer = millis();
-          state = 1;
-        }
-      }
-      else if(state == 1){
-        memset(output, 0, sizeof(output));
-        strcat(output, query_string);
-        strncpy(holder, alphabet + char_index, 1);
-        strcat(output, holder);
-        if(button==0){
-          if(angle >= angle_threshold){
-            if (millis() - scrolling_timer >= scrolling_threshold){
-              scrolling_timer = millis();
-              char_index = (char_index +1)%27;
-              memset(output, 0, sizeof(output));
-              strcat(output, query_string);
-              memset(holder, 0, sizeof(holder));
-              strncpy(holder, alphabet + char_index, 1);
-              strcat(output, holder);
-            }
-          }
-          else if(angle <= (-1)*angle_threshold){
-            if (millis() - scrolling_timer >=scrolling_threshold){
-              scrolling_timer = millis();
-              if(char_index > 0){
-                char_index =(char_index-1 )%27;
-              }
-              else{
-                char_index = 26;
-              }
-              memset(output, 0, sizeof(output));
-              strcat(output, query_string);
-              memset(holder, 0, sizeof(holder));
-              strncpy(holder, alphabet + char_index, 1);
-              strcat(output, holder);
-            }
-          }
-        }
-        if(button == 1){//short press, add new letter to query
-          strcat(query_string, holder);
-          char_index = 0;
-        }
-      }
-      else if(state == 2){
-        memset(output, 0, sizeof(output)); //resets the string
-        strcat(output, "Waiting for other players to submit word");
-        state = 3;
-      }
-      else if(state == 3){
-        strcat(query_string, "&len=200");
-        lookup(query_string, message, 200);
-        memset(output, 0, sizeof(output)); //resets the string
-        strcat(output, message);
-        memset(query_string, 0, sizeof(query_string));
-        state = 0;
-      }
-    }
-};
 TextSlider bluffInputer; //wikipedia object
 TextSlider roomInputer;
 TextSlider userInputer;
@@ -390,15 +289,21 @@ void loop() {
         break;
       }
 
-      // Now that we know that the roomKey is done, Transition to the lobby guest
-      stateMain = LOBBY_GUEST;
-      tft.fillScreen(TFT_WHITE);
-
       // Sends a POST request to join the room
       body[0] = '\0';
       add_key(body, "user", user);
       add_key(body, "room_code", roomKey);
       server_post("join_room", body);
+
+      // If theres no room with this room code, reset the room inputer and stay
+      if (!contains(response, "Token")) {
+        roomInputer.reset();
+        break;
+      }
+
+      // Now that we know that the roomKey is valid, Transition to the lobby guest
+      stateMain = LOBBY_GUEST;
+      tft.fillScreen(TFT_WHITE);
 
       // Saves the Token received
       save_to_storage(&response[7], tokenLocation);
@@ -442,7 +347,6 @@ void loop() {
       // Otherwise, display the players
       display_players();
 
-
     case LOBBY_GUEST:
       if ((millis() - last_post) > lobby_timer){
         memset(response,0,sizeof(response));
@@ -473,7 +377,6 @@ void loop() {
           tft.println("Input Response:");
           tft.println("1: select");
           tft.println("2: submit");
-
         }
       }
       break;
@@ -515,6 +418,10 @@ void loop() {
         server_post("submit_bluff", body);
 
         // Check if it is the correct answer, and if so, reset the bluff and break
+        if (contains(response, "correct")) {
+          bluffInputer.reset();
+          break;
+        }
 
         submission_timer = 60;
         stateMain = WAITING_SUBMISSION;

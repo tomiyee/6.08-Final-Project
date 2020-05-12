@@ -171,7 +171,7 @@ boolean contains (char* source, char* query) {
         break;
       }
     }
-    // If we found the delim, return a ptr to the char after the delim
+    // If we found the delim, return true
     if (worked)
       return true;
   }
