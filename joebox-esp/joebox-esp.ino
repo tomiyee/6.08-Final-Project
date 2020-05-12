@@ -336,7 +336,9 @@ void loop() {
         tft.setCursor(3,3);
         tft.print("Round: ");
         tft.println(roundNumber);
+        tft.println("");
         tft.println(response);
+        tft.println("");
         tft.println("Input Response:");
         tft.println("Short 1: Select Char");
         tft.println("Long  1: Submit User");
