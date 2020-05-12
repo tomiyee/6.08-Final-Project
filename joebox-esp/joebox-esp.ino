@@ -325,7 +325,7 @@ void loop() {
         break;
       // If the host pressed the Start Game Button
       stateMain = BLUFFING;
-      
+
       tft.fillScreen(TFT_WHITE);
 
       // POSTs the Start Game Action
@@ -540,8 +540,9 @@ void loop() {
         tft.println(roundNumber);
         tft.println(response);
         tft.println("Input Response:");
-        tft.println("1: select");
-        tft.println("2: submit");
+        tft.println("Short 1: Select Char");
+        tft.println("Long  1: Submit User");
+        tft.println("Short 2: Delete Char");
         bluffInputer.reset();
         memset(submission,0,sizeof(submission));
       }
