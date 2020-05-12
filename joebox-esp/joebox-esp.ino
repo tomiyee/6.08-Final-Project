@@ -31,8 +31,8 @@ const int LOOP_PERIOD = 40;
 
 MPU6050 imu; //imu object called, appropriately, imu
 
-char network[] = "wavesandwarehouses";
-char password[] = "G0PiggyTime99!";
+char network[] = "NETWORK";
+char password[] = "PASSWORD";
 
 //The followin are for ESP inputs via the gyro:
 
