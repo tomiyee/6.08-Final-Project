@@ -162,7 +162,7 @@ void init_imu () {
  * Return value:
  *    boolean: true if the source contains query
  */
-boolean search (char* source, char* query) {
+boolean contains (char* source, char* query) {
   for (int i = 0; i < strlen(source); i++) {
     boolean worked = true;
     for (int j = 0; j < strlen(query); j++) {

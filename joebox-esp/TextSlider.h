@@ -14,5 +14,6 @@ class TextSlider {
     TextSlider ();
     void update (float angle, int a_button, int b_button, char* output);
     void getValue (char* output);
+    void reset ();
 };
 #endif

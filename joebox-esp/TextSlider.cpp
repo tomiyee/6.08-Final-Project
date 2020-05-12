@@ -18,7 +18,7 @@ void TextSlider::update (float angle, int a_button, int b_button, char* output) 
   // Short press b, delete the most recent char
   if (b_button == 1)
     query_string[strlen(query_string)-1] = '\0';
-  
+
   // Increment or decrement the char index appropriately
   if (abs(angle) > angle_threshold && millis() - scrolling_timer >= scrolling_threshold) {
     if (angle > 0)
@@ -34,4 +34,8 @@ void TextSlider::update (float angle, int a_button, int b_button, char* output) 
 
 void TextSlider::getValue (char* output) {
   sprintf(output, "%s", query_string);
+}
+
+void TextSlider::reset () {
+  query_string[0] = '\0';
 }
