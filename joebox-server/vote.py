@@ -93,7 +93,7 @@ def vote (request):
                 500 * game_data['round_number'] * len(room_data['player_data'][player]['votes_received']))
             # Points for right answer
             player_data[player]['score'] += (
-                1000 * player_data[player]['voted_correctly'])
+                1000 * player_data[player]['voted_correctly']) * game_data['round_number']
 
         # Move on to next question
         if game_data['question_number'] == 3:
