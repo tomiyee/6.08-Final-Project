@@ -190,10 +190,6 @@ class FibbageGetter {
           strcat(query_string, holder);
           char_index = 0;
         }
-        else if(button == 2){//long press
-          memset(output, 0, sizeof(output));
-          state = 2;
-        }
       }
       else if(state == 2){
         memset(output, 0, sizeof(output)); //resets the string
@@ -502,6 +498,7 @@ void loop() {
           add_key(body, "room_code", roomKey);
           server_get("current_prompt", body);
 
+          tft.fillScreen(TFT_WHITE);
           tft.setCursor(3,3);
           memset(old_prompt,0,sizeof(old_prompt));
           strcpy(old_prompt,response);
@@ -511,6 +508,7 @@ void loop() {
           tft.println("Input Response:");
           tft.println("1: select");
           tft.println("2: submit");
+          
         }
       }
       break;
