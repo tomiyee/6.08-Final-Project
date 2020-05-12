@@ -742,6 +742,7 @@ void loop() {
           // GET get_bluffs
           body[0] = '\0';
           add_key(body, "room_code", roomKey);
+          add_key(body, "user", user);
           server_get("get_bluffs", body);
 
           char * pointer;
