@@ -184,8 +184,8 @@ void loop() {
         tft.setCursor(3,3);
         tft.println("Input Username:");
         tft.println("Short 1: Select Char");
-        tft.println("Long  1: Submit User");
         tft.println("Short 2: Delete Char");
+        tft.println("Long  1: Submit User");
         break;
       }
       // There is history
@@ -229,7 +229,6 @@ void loop() {
           tft.setTextSize(1);
           tft.setCursor(3,80);
           tft.println("Short 1: Select Char");
-          tft.println("Long  1: Submit User");
           tft.println("Short 2: Delete Char");
         }
       }
@@ -346,8 +345,8 @@ void loop() {
       tft.println("");
       tft.println("Input Response:");
       tft.println("Short 1: Select Char");
-      tft.println("Long  1: Submit User");
       tft.println("Short 2: Delete Char");
+      tft.println("Long  1: Submit Bluff");
       break;
     case LOBBY_GUEST:
       if ((millis() - last_post) > lobby_timer){
@@ -375,11 +374,13 @@ void loop() {
           strcpy(old_prompt,response);
           tft.print("Round: ");
           tft.println(roundNumber);
+          tft.println("");
           tft.println(response);
+          tft.println("");
           tft.println("Input Response:");
           tft.println("Short 1: Select Char");
-          tft.println("Long  1: Submit User");
           tft.println("Short 2: Delete Char");
+          tft.println("Long  1: Submit Bluff");
         }
       }
       break;
@@ -389,6 +390,7 @@ void loop() {
         last_post = millis();
         submission_timer = submission_timer - 1;
         tft.setCursor(0,130);
+        if (submission_timer < 10) tft.print(" ");
         tft.print(submission_timer);
       }
 
@@ -478,6 +480,7 @@ void loop() {
       tft.print("Vote: ");
       tft.println(choice_vote + 1); // Display as 1-indexed
       tft.setCursor(0,130);
+      if (submission_timer < 10) tft.print(" ");
       tft.print(submission_timer);
 
       // On a Long Press, transition to waiting for votes
@@ -524,10 +527,6 @@ void loop() {
       if (strcmp(response,"false") == 0 && roundNumber < 7){
         stateMain = BLUFFING;
 
-        // Remove trailing white space from the room key
-        if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
-          roomKey[strlen(roomKey)-1] = '\0';
-
         // GET the current_prompt
         body[0] = '\0';
         add_key(body, "room_code", roomKey);
@@ -538,11 +537,13 @@ void loop() {
         tft.setCursor(3,3);
         tft.print("Round: ");
         tft.println(roundNumber);
+        tft.println("");
         tft.println(response);
+        tft.println("");
         tft.println("Input Response:");
         tft.println("Short 1: Select Char");
-        tft.println("Long  1: Submit User");
         tft.println("Short 2: Delete Char");
+        tft.println("Long  1: Submit Bluff");
         bluffInputer.reset();
         memset(submission,0,sizeof(submission));
       }
@@ -658,8 +659,8 @@ void loop() {
         tft.setCursor(3,3);
         tft.println("Input Username:");
         tft.println("Short 1: Select Char");
-        tft.println("Long  1: Submit User");
         tft.println("Short 2: Delete Char");
+        tft.println("Long  1: Submit User");
       }
       break;
     case RESTART:
