@@ -664,6 +664,7 @@ void loop() {
       break;
     case RESTART:
       if (btn1 == 1 && isUserHost){
+        tft.fillScreen(TFT_WHITE);
         roundNumber = 1;
         stateMain = LOBBY_HOST;
         tft.setCursor(35,3);
@@ -674,6 +675,7 @@ void loop() {
         tft.println("Long 1: Start Game");
       }
       else if(btn1 == 1 && !isUserHost){
+        tft.fillScreen(TFT_WHITE);
         roundNumber = 1;
         stateMain = LOBBY_GUEST;
         tft.setCursor(35,3);
