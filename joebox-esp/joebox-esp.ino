@@ -31,8 +31,8 @@ const int LOOP_PERIOD = 40;
 
 MPU6050 imu; //imu object called, appropriately, imu
 
-char network[] = "wavesandwarehouses";
-char password[] = "G0PiggyTime99!";
+char network[] = "ATT8CkJ3vp";
+char password[] = "9#sj4c%i7nbm";
 
 //The followin are for ESP inputs via the gyro:
 
@@ -624,7 +624,7 @@ void loop() {
         char output[100];
         pointer = strtok(response,",");
         tft.setCursor(0,3);
-        tft.println(old_prompt);
+        tft.println("");
         tft.println("Cast your vote!");
         tft.println("");
         tft.println("1: Scroll");
