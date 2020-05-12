@@ -17,8 +17,8 @@ const int LOOP_PERIOD = 40;
 MPU6050 imu; //imu object called, appropriately, imu
 
 
-char network[] = "NAME";
-char password[] = "PASSWORD";
+char network[] = "ATT8CkJ3vp";
+char password[] = "9#sj4c%i7nbm";
 
 
 //The followin are for ESP inputs via the gyro:
@@ -326,15 +326,9 @@ void loop() {
       roomKey[strlen(roomKey)-1]='\0';
 
       // Sends a POST request to join the room
-<<<<<<< HEAD
-      char body[100];
-      add_key(body, "room_code", roomKey);
-      add_key(body, "user", user);
-=======
       body[0] = '\0';
       add_key(body, "user", user);
       add_key(body, "room_code", roomKey);
->>>>>>> 14a1c9ef2a0c6d8144dd43c76754e232ffc827a4
       server_post("join_room", body);
 
       // Transition to the Lobby_Host State
@@ -349,17 +343,12 @@ void loop() {
     case JOIN:
       if (strlen(roomKey) == 5){
         tft.fillScreen(TFT_WHITE);
+        roomKey[strlen(roomKey)-1] = '\0';
 
         // Sends a POST request to join the room
-<<<<<<< HEAD
-        char body[100];
-        add_key(body, "room_code", roomKey);
-        add_key(body, "user", user);
-=======
         body[0] = '\0';
         add_key(body, "user", user);
         add_key(body, "room_code", roomKey);
->>>>>>> 14a1c9ef2a0c6d8144dd43c76754e232ffc827a4
         server_post("join_room", body);
 
         // Saves the Token
