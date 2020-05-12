@@ -31,8 +31,9 @@ const int LOOP_PERIOD = 40;
 
 MPU6050 imu; //imu object called, appropriately, imu
 
-char network[] = "NETWORK";
 char password[] = "PASSWORD";
+char network[] = "wavesandwarehouse";
+char password[] = "G0PiggyTime99!";
 
 //The followin are for ESP inputs via the gyro:
 
@@ -483,7 +484,7 @@ void loop() {
       tft.print(submission_timer);
 
       // On a Long Press, transition to waiting for votes
-      if (btn2 == 1 || submission_time <= 0){
+      if (btn2 == 1 || submission_timer <= 0){
         submission_timer = 60;
         stateMain = WAITINGVOTES;
 
