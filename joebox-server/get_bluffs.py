@@ -20,7 +20,7 @@ def get_bluffs (request):
 
     if 'room_code' not in request['values']:
         return "Misssing Room Code"
-    room_code = request['values']['room_code']
+    room_code = request['values']['room_code'].strip()
 
     # Read the Room Data
     conn = sqlite3.connect(bluffalo_db)
@@ -33,8 +33,10 @@ def get_bluffs (request):
         return "No room with room code: " + room_code
 
     room_data = json.loads(room_rows[0][0])
+    game_data = room_data['game_data']
+    player_data = room_data['player_data']
 
-    if room_data['game_data']['in_lobby']:
+    if game_data['in_lobby']:
         return "No bluffs to list"
 
     # Builds a list of bluffs, without repetition

@@ -56,10 +56,10 @@ def join_room (request):
     if 'user' not in request['form']:
         return "Missing Username"
 
-    room_code = request['form']['room_code']
-    user = request['form']['user']
+    room_code = request['form']['room_code'].strip()
+    user = request['form']['user'].strip()
     # Check that the username only has capital letters
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUVQXYZ"
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVQXWYZ"
     for c in user:
         if c not in alphabet:
             return "Username can only have capital letters."

@@ -13,10 +13,9 @@ def room_code_check(request):
     Returns the string "false" if no room, and the string "true"
     """
 
-    try:
-        room_code = request['values']['room_code']
-    except:
-        return '1' #one of the required parameters are missing
+    if 'room_code' not in request['values']:
+        return "Misssing Room Code"
+    room_code = request['values']['room_code'].strip()
 
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor()

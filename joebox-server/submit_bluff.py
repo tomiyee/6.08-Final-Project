@@ -25,9 +25,9 @@ def submit_bluff (request):
     if 'bluff' not in request_form:
         return "Misssing Bluff to Submit"
 
-    room_code = request_form['room_code']
-    user = request_form['user']
-    bluff_submitted = request_form['bluff']
+    room_code = request_form['room_code'].strip()
+    user = request_form['user'].strip()
+    bluff_submitted = request_form['bluff'].strip()
 
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor()
@@ -64,7 +64,7 @@ def submit_bluff (request):
     # Forces the bluff_submitted to be strictly capital letters
     bluff_submitted = bluff_submitted.upper()
     for c in bluff_submitted:
-        if c not in "ABCDEFGHIJKLMNOPQRSTUVQXYZ":
+        if c not in "ABCDEFGHIJKLMNOPQRSTUVQXWYZ":
             return "Bluff can only have capital letters."
 
     # Fetches the current prompt

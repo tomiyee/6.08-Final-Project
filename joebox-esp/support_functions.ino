@@ -1,26 +1,10 @@
 
-
-
-
-
-
 void writeToBytes(char* inputArray, byte* outputArray){
   memset(outputArray,0,sizeof(outputArray));
   for (int i =0; i < strlen(inputArray);i++){
     outputArray[0] = (byte) inputArray[0];
   }
 }
-
-/*----------------------------------
-  char_append Function:
-  Arguments:
-     char* buff: pointer to character array which we will append a
-     char c:
-     uint16_t buff_size: size of buffer buff
-
-  Return value:
-     boolean: True if character appended, False if not appended (indicating buffer full)
-*/
 
 void printMenu(int choice){
   tft.fillRect(3,40,10,10,TFT_WHITE);
@@ -48,8 +32,16 @@ void printMenu(int choice){
   tft.println("2: Select");
 }
 
-
-
+/*----------------------------------
+ * char_append Function:
+ * Arguments:
+ *    char* buff: pointer to character array which we will append a
+ *    char c:
+ *    uint16_t buff_size: size of buffer buff
+ *
+ * Return value:
+ *    boolean: True if character appended, False if not appended (indicating buffer full)
+ */
 uint8_t char_append(char* buff, char c, uint16_t buff_size) {
   int len = strlen(buff);
   if (len > buff_size) return false;
@@ -106,7 +98,7 @@ void do_http_request(char* host, char* request, char* response, uint16_t respons
  *
  * Initializes the Screen and related variables
  */
-void initTft () {
+void init_tft () {
   tft.init();  //init screen
   tft.setRotation(2); //adjust rotation
   tft.setTextSize(1); //default font size
@@ -119,7 +111,7 @@ void initTft () {
  *
  * Handles logging in to the Wifi.
  */
-void loadWifi () {
+void load_wifi () {
   WiFi.begin(network, password); //attempt to connect to wifi
   uint8_t count = 0; //count used for Wifi check times
   Serial.print("Attempting to connect to ");
@@ -146,7 +138,7 @@ void loadWifi () {
  *
  * Handles initializing the Accelerometer
  */
-void initImu () {
+void init_imu () {
   if (imu.setupIMU(1)) {
     Serial.println("IMU Connected!");
   } else {
@@ -170,7 +162,7 @@ void initImu () {
  * Return value:
  *    boolean: true if the source contains query
  */
-boolean search (char* source, char* query) {
+boolean contains (char* source, char* query) {
   for (int i = 0; i < strlen(source); i++) {
     boolean worked = true;
     for (int j = 0; j < strlen(query); j++) {
@@ -179,7 +171,7 @@ boolean search (char* source, char* query) {
         break;
       }
     }
-    // If we found the delim, return a ptr to the char after the delim
+    // If we found the delim, return true
     if (worked)
       return true;
   }
@@ -248,7 +240,6 @@ void server_get (char* action, char* params) {
   do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
   response[strlen(response)-1]='\0';
 }
-
 
 /*----------------------------------
  * add_key Function:
