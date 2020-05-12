@@ -245,20 +245,17 @@ void setup() {
 
 
 void loop() {
-  // Remove trailing white space from the room key
-  if(strlen(roomKey) > 0 && roomKey[strlen(roomKey)-1] == ' ')
-    roomKey[strlen(roomKey)-1] = '\0';
 
   float x, y;
   get_angle(&x, &y); //get angle values
-  int flag1 = button1.update(); //get button value
-  int flag2 = button2.update();
+  int btn1 = button1.update(); //get button value
+  int btn2 = button2.update();
 
   char body[100];
 
   switch(stateMain){
     case START:
-      if (flag2 == 1 || flag1 == 1){
+      if (btn2 == 1 || btn1 == 1){
         if (EEPROM.read(0) == 255){
           stateMain = INPUTUSER;
           tft.fillScreen(TFT_WHITE);
@@ -291,18 +288,18 @@ void loop() {
       }
       break;
     case MAIN:
-      if (flag1 == 1){
+      if (btn1 == 1){
         choiceMain = (choiceMain+1) % 2;
         printMenu(choiceMain);
       }
-      else if (flag2 == 1){
-        if (choiceMain == 0){
+      else if (btn2 == 1) {
+        if (choiceMain == 0) {
           stateMain = CREATE;
           isUserHost = true;
           tft.setCursor(3,3);
           tft.print("Fetching room key...");
         }
-        else{
+        else {
           stateMain = JOIN;
           tft.fillScreen(TFT_WHITE);
           tft.setTextSize(2);
@@ -369,7 +366,7 @@ void loop() {
         tft.setTextSize(1);
         tft.setCursor(3,30);
       }
-      else if (flag2 == 1){
+      else if (btn2 == 1){
         memset(roomKey+(strlen(roomKey)-1),0,1);
         if (strcmp(roomKey,prevRoomKey)){
           tft.fillRect(0,50,128,20,TFT_WHITE);
@@ -382,14 +379,14 @@ void loop() {
         while (millis() - primary_timer < LOOP_PERIOD); //wait for primary timer to increment
         primary_timer = millis();
       }
-      roomInputer.update(-y,flag1,roomKey);
+      roomInputer.update(-y,btn1,roomKey);
       if (strcmp(roomKey,prevRoomKey) != 0){
         tft.fillRect(0,50,128,20,TFT_WHITE);
         if (strcmp(roomKey,"Long Press 1 to Start!") != 0){
           tft.setTextSize(2);
           tft.setCursor(30,50);
         }
-        else{
+        else {
           tft.setTextSize(1);
           tft.setCursor(3,50);
         }
@@ -408,6 +405,9 @@ void loop() {
         memset(response,0,sizeof(response));
         last_post = millis();
 
+        // Remove trailing white space from the room key
+        if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
+          roomKey[strlen(roomKey)-1] = '\0';
         // GET request to check the list
         body[0] = '\0';
         add_key(body, "room_code", roomKey);
@@ -427,8 +427,12 @@ void loop() {
         }
       }
 
-      if (flag1 == 2){
+      if (btn1 == 2){
         stateMain = STARTGAME;
+
+        // Remove trailing white space from the room key
+        if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
+          roomKey[strlen(roomKey)-1] = '\0';
 
         // Sends the Start Game Action
         body[0] = '\0';
@@ -436,7 +440,6 @@ void loop() {
         server_post("start_game", body);
 
         // Sends a request to the same room for the current prompt
-
         body[0] = '\0';
         add_key(body, "room_code", roomKey);
         server_get("current_prompt", body);
@@ -455,6 +458,11 @@ void loop() {
       if ((millis() - last_post) > lobby_timer){
         memset(response,0,sizeof(response));
         last_post = millis();
+
+        // Remove trailing white space from the room key
+        if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
+          roomKey[strlen(roomKey)-1] = '\0';
+
         // Sends the list_players Request
         body[0] = '\0';
         add_key(body, "room_code", roomKey);
@@ -473,6 +481,10 @@ void loop() {
           pointer = strtok(NULL,",");
         }
 
+        // Remove trailing white space from the room key
+        if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
+          roomKey[strlen(roomKey)-1] = '\0';
+
         // Sends a Get Request to check if in lobby
         body[0] = '\0';
         add_key(body, "room_code", roomKey);
@@ -480,6 +492,10 @@ void loop() {
 
         if (strcmp(response,"false") == 0){
           stateMain = STARTGAME;
+
+          // Remove trailing white space from the room key
+          if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
+            roomKey[strlen(roomKey)-1] = '\0';
 
           // Sends the Current Prompt Request
           body[0] = '\0';
@@ -504,7 +520,7 @@ void loop() {
         submission_timer= submission_timer-1;
       }
 
-      fibbage.update(-y,flag1,submission);
+      fibbage.update(-y,btn1,submission);
       if (strcmp(submission,old_submission) != 0){
         tft.fillRect(0,50,128,20,TFT_WHITE);
         tft.setTextSize(1);
@@ -515,17 +531,19 @@ void loop() {
       tft.setCursor(0,130);
       tft.print(submission_timer);
 
-
       memset(old_submission,0,sizeof(old_submission));
       strcat(old_submission,submission);
       while (millis() - primary_timer < LOOP_PERIOD); //wait for primary timer to increment
       primary_timer = millis();
 
 
-      if (flag2 == 1 || submission_timer <=0){
+      if (btn2 == 1 || submission_timer <=0){
         submission_timer = 60;
         stateMain = WAITINGSUBMISSION;
 
+        // Remove trailing white space from the room key
+        if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
+          roomKey[strlen(roomKey)-1] = '\0';
         // Sends a Submit Bluff request
         body[0] = '\0';
         add_key(body, "room_code", roomKey);
@@ -534,14 +552,13 @@ void loop() {
         server_post("submit_bluff", body);
 
         tft.fillScreen(TFT_WHITE);
-
         tft.setCursor(3,10);
         tft.println(response);
         last_post=millis();
       }
       break;
     case INPUTUSER:
-      userInputer.update(-y,flag1,user);
+      userInputer.update(-y,btn1,user);
       if (strcmp(user,old_user) != 0){
         tft.fillRect(0,50,128,20,TFT_WHITE);
         tft.setTextSize(1);
@@ -549,7 +566,7 @@ void loop() {
         tft.print(user);
       }
 
-      if (flag2 == 1){
+      if (btn2 == 1){
         user[strlen(user)-1]='\0';
 
         for (int i =0; i < strlen(user);i++){
@@ -576,13 +593,13 @@ void loop() {
         submission_timer= submission_timer-1;
       }
 
-      if (flag1 == 1){
+      if (btn1 == 1){
         choice_vote = choice_vote-1;
         if (choice_vote == 0){
           choice_vote = num_players;
         }
       }
-      else if (flag2 == 1){
+      else if (btn2 == 1){
         choice_vote = choice_vote +1;
         if (choice_vote > num_players){
           choice_vote = 1;
@@ -594,13 +611,18 @@ void loop() {
       tft.setCursor(0,130);
       tft.print(submission_timer);
 
-      if (flag1 == 2){
+      if (btn1 == 2){
         submission_timer = 60;
         stateMain = WAITINGVOTES;
 
         // Convert the choice into string format
         char choice[6];
         sprintf(choice, "%d", choice_vote-1);
+
+        // Remove trailing white space from the room key
+        if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
+          roomKey[strlen(roomKey)-1] = '\0';
+
         // Sends the choice to the server as a post request
         body[0] = '\0';
         add_key(body, "room_code", roomKey);
@@ -609,7 +631,6 @@ void loop() {
         server_post("vote", body);
 
         tft.fillScreen(TFT_WHITE);
-
         tft.setCursor(3,10);
         tft.println(response);
         last_post=millis();
@@ -618,20 +639,28 @@ void loop() {
     case WAITINGVOTES:
       if ((millis() - last_post) > lobby_timer){
         last_post = millis();
-        char request[500];
-        sprintf(request,"GET /sandbox/sc/team033/bluffalo/server.py?action=waiting_for_votes&room_code=%s HTTP/1.1\r\n",roomKey);
-        sprintf(request + strlen(request), "Host: %s\r\n\r\n", host);
 
-        do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
-        response[strlen(response)-1]='\0';
+        // Remove trailing white space from the room key
+        if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
+          roomKey[strlen(roomKey)-1] = '\0';
+
+        // Checks if we are waiting for votes
+        body[0] = '\0';
+        add_key(body, "room_code", roomKey);
+        server_get("waiting_for_votes", body);
 
         if (strcmp(response,"false") == 0 && roundNumber < 7){
           stateMain = STARTGAME;
-          char request[500];
-          sprintf(request,"GET /sandbox/sc/team033/bluffalo/server.py?action=current_prompt&room_code=%s HTTP/1.1\r\n",roomKey);
-          sprintf(request + strlen(request), "Host: %s\r\n\r\n", host);
 
-          do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+          // Remove trailing white space from the room key
+          if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
+            roomKey[strlen(roomKey)-1] = '\0';
+
+          // GET the current_prompt
+          body[0] = '\0';
+          add_key(body, "room_code", roomKey);
+          server_get("current_prompt", body);
+
           roundNumber++;
           tft.fillScreen(TFT_WHITE);
           tft.setCursor(3,3);
@@ -646,11 +675,16 @@ void loop() {
         }
 
         else if (strcmp(response,"false") == 0 && roundNumber == 7){
-          char request[500];
-          sprintf(request,"GET /sandbox/sc/team033/bluffalo/server.py?action=score_rank&room_code=%s HTTP/1.1\r\n",roomKey);
-          sprintf(request + strlen(request), "Host: %s\r\n\r\n", host);
 
-          do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+          // Remove trailing white space from the room key
+          if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
+            roomKey[strlen(roomKey)-1] = '\0';
+
+          // Checks if we are waiting for votes
+          body[0] = '\0';
+          add_key(body, "room_code", roomKey);
+          server_get("score_rank", body);
+
           char players[20][20];
           int scores[20];
           char * pointer;
@@ -685,20 +719,31 @@ void loop() {
     case WAITINGSUBMISSION:
       if ((millis() - last_post) > lobby_timer){
         last_post = millis();
-        char request[500];
-        sprintf(request,"GET /sandbox/sc/team033/bluffalo/server.py?action=waiting_for_submissions&room_code=%s HTTP/1.1\r\n",roomKey);
-        sprintf(request + strlen(request), "Host: %s\r\n\r\n", host);
 
-        do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
-        response[strlen(response)-1]='\0';
+
+        // Remove trailing white space from the room key
+        if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
+          roomKey[strlen(roomKey)-1] = '\0';
+
+        // GET waiting_for_submissions
+        body[0] = '\0';
+        add_key(body, "room_code", roomKey);
+        server_get("waiting_for_submissions", body);
+
 
         if (strcmp(response,"false")==0){
           tft.fillScreen(TFT_WHITE);
           stateMain = VOTE;
-          char request[500];
-          sprintf(request,"GET /sandbox/sc/team033/bluffalo/server.py?action=get_bluffs&room_code=%s&user=%s HTTP/1.1\r\n",roomKey,user);
-          sprintf(request + strlen(request), "Host: %s\r\n\r\n", host);
-          do_http_request(host, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+
+          // Remove trailing white space from the room key
+          if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
+            roomKey[strlen(roomKey)-1] = '\0';
+
+          // GET get_bluffs
+          body[0] = '\0';
+          add_key(body, "room_code", roomKey);
+          server_get("get_bluffs", body);
+
           char * pointer;
           int player_num = 0;
           char output[100];
@@ -722,7 +767,7 @@ void loop() {
       }
       break;
     case OLDUSER:
-      if (flag1 == 1){
+      if (btn1 == 1){
         memset(user,0,sizeof(user));
         strcpy(user,storedUser);
         stateMain = MAIN;
@@ -733,7 +778,7 @@ void loop() {
         tft.setTextSize(1);
         printMenu(choiceMain);
       }
-      if (flag2 == 1){
+      if (btn2 == 1){
         stateMain = INPUTUSER;
         tft.fillScreen(TFT_WHITE);
         tft.setTextSize(1);
@@ -744,7 +789,7 @@ void loop() {
       }
       break;
     case RESTART:
-      if (flag1 == 1 && isUserHost){
+      if (btn1 == 1 && isUserHost){
         roundNumber = 1;
         stateMain = LOBBY_HOST;
         tft.setCursor(35,3);
@@ -754,7 +799,7 @@ void loop() {
         tft.setCursor(3,20);
         tft.println("Long 1: Start Game");
       }
-      else if(flag1 == 1 && !isUserHost){
+      else if(btn1 == 1 && !isUserHost){
         roundNumber = 1;
         stateMain = LOBBY_GUEST;
         tft.setCursor(35,3);
