@@ -64,7 +64,7 @@ def submit_bluff (request):
     # Forces the bluff_submitted to be strictly capital letters
     bluff_submitted = bluff_submitted.upper()
     for c in bluff_submitted:
-        if c not in "ABCDEFGHIJKLMNOPQRSTUVQXYZ":
+        if c not in "ABCDEFGHIJKLMNOPQRSTUVQXWYZ":
             return "Bluff can only have capital letters."
 
     # Fetches the current prompt

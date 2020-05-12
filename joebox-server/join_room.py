@@ -59,7 +59,7 @@ def join_room (request):
     room_code = request['form']['room_code'].strip()
     user = request['form']['user'].strip()
     # Check that the username only has capital letters
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUVQXYZ"
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVQXWYZ"
     for c in user:
         if c not in alphabet:
             return "Username can only have capital letters."
