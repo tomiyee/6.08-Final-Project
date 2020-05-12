@@ -31,8 +31,7 @@ const int LOOP_PERIOD = 40;
 
 MPU6050 imu; //imu object called, appropriately, imu
 
-char password[] = "PASSWORD";
-char network[] = "wavesandwarehouse";
+char network[] = "wavesandwarehouses";
 char password[] = "G0PiggyTime99!";
 
 //The followin are for ESP inputs via the gyro:
@@ -81,7 +80,7 @@ unsigned long lobby_timer = 7000;
 int submission_timer = 60;
 int last_post = millis();
 
-int choice_vote = 1;
+int choice_vote = 0;
 int num_players;
 
 int old_val;
@@ -396,11 +395,11 @@ void loop() {
       bluffInputer.update(-y, btn1, btn2, submission);
 
       // If the bluff has changed, update the drawing
-      if (strcmp(submission,old_submission) != 0){
-        tft.fillRect(0,50,128,20,TFT_WHITE);
+      if (strcmp(submission,old_submission) != 0) {
         tft.setTextSize(1);
         tft.setCursor(3,50);
         tft.print(submission);
+        tft.print("  ");
         sprintf(old_submission, submission);
       }
 
@@ -468,18 +467,15 @@ void loop() {
 
       if(millis() - last_post > 1000) {
         last_post = millis();
-        submission_timer= submission_timer-1;
+        submission_timer = submission_timer-1;
       }
-
-      if (btn1 == 1) {
-        choice_vote = choice_vote + 1;
-        if (choice_vote == 0)
-          choice_vote = num_players;
-      }
+      // Counts Up, and the variable is 0-indexed
+      if (btn1 == 1)
+        choice_vote = (choice_vote + 1) % num_players;
 
       tft.setCursor(0,10*num_players+60);
       tft.print("Vote: ");
-      tft.println(choice_vote);
+      tft.println(choice_vote + 1); // Display as 1-indexed
       tft.setCursor(0,130);
       tft.print(submission_timer);
 
@@ -490,7 +486,7 @@ void loop() {
 
         // Convert the choice into string format
         char choice[6];
-        sprintf(choice, "%d", choice_vote-1);
+        sprintf(choice, "%d", choice_vote);
 
         // Remove trailing white space from the room key
         if(strlen(roomKey) == 5) roomKey[strlen(roomKey)-1] = '\0';
