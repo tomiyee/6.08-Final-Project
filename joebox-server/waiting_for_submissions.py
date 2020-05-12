@@ -21,7 +21,7 @@ def waiting_for_submissions (request):
 
     if 'room_code' not in request['values']:
         return "Misssing Room Code"
-    room_code = request['values']['room_code']
+    room_code = request['values']['room_code'].strip()
 
     # Read the Room Data
     conn = sqlite3.connect(bluffalo_db)
@@ -34,6 +34,6 @@ def waiting_for_submissions (request):
         return "No room with room code: " + room_code
 
     room_data = json.loads(room_rows[0][0])
-    
+
     # Temporary Return Value
     return "true" if room_data['game_data']['waiting_for_submissions'] else "false"

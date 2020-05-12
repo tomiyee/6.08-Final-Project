@@ -25,8 +25,8 @@ def vote (request):
     if 'choice' not in request_form:
         return "Misssing Choice Number"
 
-    room_code = request_form['room_code']
-    user = request_form['user']
+    room_code = request_form['room_code'].strip()
+    user = request_form['user'].strip()
     choice_index = int(request_form['choice'])
 
     # Connect to the SQL Database and try to find the room_code

@@ -14,7 +14,7 @@ def current_prompt (request):
     """
 
     try:
-        room_code = request['values']['room_code']
+        room_code = request['values']['room_code'].strip()
     except:
         return "Invalid room code"
 

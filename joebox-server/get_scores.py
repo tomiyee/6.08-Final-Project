@@ -23,7 +23,7 @@ def get_scores (request):
 
     if 'room_code' not in request['values']:
         return "Misssing Room Code"
-    room_code = request['values']['room_code']
+    room_code = request['values']['room_code'].strip()
 
 
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)

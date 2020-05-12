@@ -19,7 +19,7 @@ def start_game (request):
     if 'room_code' not in request['form']:
         return "Misssing Room Code"
 
-    room_code = request['form']['room_code']
+    room_code = request['form']['room_code'].strip()
 
     conn = sqlite3.connect(bluffalo_db)  # connect to that database (will create if it doesn't already exist)
     connection = conn.cursor()
