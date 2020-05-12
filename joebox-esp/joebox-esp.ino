@@ -51,13 +51,11 @@ char prevRoomKey[100] = {0};
 //Variable used to keep track of whether the user is a host or not:
 boolean isUserHost = false;
 
-
 //The following is for the EEPROM functionality of the ESP:
 char storedUser[100] = "";
 
 //Contains the index of the subsection of the EEPROM memory we allocate to the token. 50 bytes.
 int tokenLocation = 100;
-
 
 //STATE MACHINE VARIABLE:
 int stateMain = 0;
@@ -79,7 +77,7 @@ char old_prompt[150] = {0};
 
 unsigned long primary_timer;
 unsigned long lobby_timer = 7000;
-unsigned long submission_timer = 60;
+int submission_timer = 60;
 int last_post = millis();
 
 int choice_vote = 1;
@@ -386,7 +384,7 @@ void loop() {
       // Count down the timeout in the bottom left
       if(millis()-last_post > 1000) {
         last_post = millis();
-        submission_timer= submission_timer - 1;
+        submission_timer = submission_timer - 1;
         tft.setCursor(0,130);
         tft.print(submission_timer);
       }
@@ -465,23 +463,17 @@ void loop() {
       break;
     case VOTE:
 
-      if(millis() - last_post > 1000){
+      if(millis() - last_post > 1000) {
         last_post = millis();
         submission_timer= submission_timer-1;
       }
 
-      if (btn1 == 1){
-        choice_vote = choice_vote-1;
-        if (choice_vote == 0){
+      if (btn1 == 1) {
+        choice_vote = choice_vote + 1;
+        if (choice_vote == 0)
           choice_vote = num_players;
-        }
       }
-      else if (btn2 == 1){
-        choice_vote = choice_vote +1;
-        if (choice_vote > num_players){
-          choice_vote = 1;
-        }
-      }
+
       tft.setCursor(0,10*num_players+60);
       tft.print("Vote: ");
       tft.println(choice_vote);
@@ -489,7 +481,7 @@ void loop() {
       tft.print(submission_timer);
 
       // On a Long Press, transition to waiting for votes
-      if (btn1 == 2){
+      if (btn2 == 1 || submission_time <= 0){
         submission_timer = 60;
         stateMain = WAITINGVOTES;
 
@@ -632,10 +624,10 @@ void loop() {
         pointer = strtok(response,",");
         tft.setCursor(0,3);
         tft.println(old_prompt);
-        tft.println("Cast your vote");
-        tft.println("1: down");
-        tft.println("2: up");
-        tft.println("Long 1: submit");
+        tft.println("Cast your vote!");
+        tft.println("");
+        tft.println("1: Scroll");
+        tft.println("2: Submit");
         tft.println("");
         while (pointer != NULL) {
           memset(output,0,sizeof(output));
@@ -644,7 +636,6 @@ void loop() {
           tft.println(output);
           pointer = strtok(NULL,",");
         }
-
       }
       break;
     case OLD_USER:
