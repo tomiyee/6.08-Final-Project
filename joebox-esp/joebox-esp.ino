@@ -318,35 +318,36 @@ void loop() {
       primary_timer = millis();
       break;
     case LOBBY_HOST:
-      // If the host pressed the Start Game Button
-      if (btn1 == 2) {
-        stateMain = BLUFFING;
 
-        // POSTs the Start Game Action
-        body[0] = '\0';
-        sprintf(body,"room_code=%s",roomKey);
-        server_post("start_game", body);
-
-        // GETs the Current Prompt
-        body[0] = '\0';
-        add_key(body, "room_code", roomKey);
-        server_get("current_prompt", body);
-
-        tft.fillScreen(TFT_WHITE);
-        tft.setCursor(3,3);
-        tft.print("Round: ");
-        tft.println(roundNumber);
-        tft.println("");
-        tft.println(response);
-        tft.println("");
-        tft.println("Input Response:");
-        tft.println("Short 1: Select Char");
-        tft.println("Long  1: Submit User");
-        tft.println("Short 2: Delete Char");
-        break;
-      }
       // Otherwise, display the players
       display_players();
+      if (btn1 != 2)
+        break;
+      // If the host pressed the Start Game Button
+      stateMain = BLUFFING;
+      
+      tft.fillScreen(TFT_WHITE);
+
+      // POSTs the Start Game Action
+      body[0] = '\0';
+      sprintf(body,"room_code=%s",roomKey);
+      server_post("start_game", body);
+
+      // GETs the Current Prompt
+      body[0] = '\0';
+      add_key(body, "room_code", roomKey);
+      server_get("current_prompt", body);
+
+      tft.setCursor(3,3);
+      tft.print("Round: ");
+      tft.println(roundNumber);
+      tft.println("");
+      tft.println(response);
+      tft.println("");
+      tft.println("Input Response:");
+      tft.println("Short 1: Select Char");
+      tft.println("Long  1: Submit User");
+      tft.println("Short 2: Delete Char");
       break;
     case LOBBY_GUEST:
       if ((millis() - last_post) > lobby_timer){
@@ -397,7 +398,7 @@ void loop() {
       // If the bluff has changed, update the drawing
       if (strcmp(submission,old_submission) != 0) {
         tft.setTextSize(1);
-        tft.setCursor(3,50);
+        tft.setCursor(3,80);
         tft.print(submission);
         tft.print("  ");
         sprintf(old_submission, submission);
