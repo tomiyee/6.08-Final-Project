@@ -340,13 +340,14 @@ void loop() {
         tft.println(roundNumber);
         tft.println(response);
         tft.println("Input Response:");
-        tft.println("1: select");
-        tft.println("2: submit");
+        tft.println("Short 1: Select Char");
+        tft.println("Long  1: Submit User");
+        tft.println("Short 2: Delete Char");
         break;
       }
       // Otherwise, display the players
       display_players();
-
+      break;
     case LOBBY_GUEST:
       if ((millis() - last_post) > lobby_timer){
         memset(response,0,sizeof(response));
@@ -375,8 +376,9 @@ void loop() {
           tft.println(roundNumber);
           tft.println(response);
           tft.println("Input Response:");
-          tft.println("1: select");
-          tft.println("2: submit");
+          tft.println("Short 1: Select Char");
+          tft.println("Long  1: Submit User");
+          tft.println("Short 2: Delete Char");
         }
       }
       break;
