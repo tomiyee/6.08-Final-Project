@@ -6,6 +6,7 @@
 #include<math.h>
 #include<string.h>
 #include "Button.h" //important fancy button class from Button.h file
+#include "TextSlider.h"
 
 TFT_eSPI tft = TFT_eSPI();
 const int SCREEN_HEIGHT = 160;
@@ -14,12 +15,24 @@ const int BUTTON_PIN1 = 16;
 const int BUTTON_PIN2 = 5;
 const int LOOP_PERIOD = 40;
 
+#define START 0
+#define MAIN 1
+#define LOBBY_HOST 2
+#define JOIN 3
+#define LOBBY_GUEST 4
+#define BLUFFING 5
+#define CREATE 6
+#define INPUTUSER 7
+#define VOTE 8
+#define WAITINGSUBMISSION 10
+#define WAITINGVOTES 11
+#define OLD_USER 12
+#define RESTART 13
+
 MPU6050 imu; //imu object called, appropriately, imu
 
-
-char network[] = "ATT8CkJ3vp";
-char password[] = "9#sj4c%i7nbm";
-
+char network[] = "wavesandwarehouses";
+char password[] = "G0PiggyTime99!";
 
 //The followin are for ESP inputs via the gyro:
 
@@ -45,20 +58,6 @@ char storedUser[100] = "";
 //Contains the index of the subsection of the EEPROM memory we allocate to the token. 50 bytes.
 int tokenLocation = 100;
 
-#define START 0
-#define MAIN 1
-#define LOBBY_HOST 2
-#define JOIN 3
-#define LOBBY_GUEST 4
-#define STARTGAME 5
-#define CREATE 6
-#define INPUTUSER 7
-#define VOTE 8
-#define WAITINGSUBMISSION 10
-#define WAITINGVOTES 11
-#define OLDUSER 12
-#define RESTART 13
-
 
 //STATE MACHINE VARIABLE:
 int stateMain = 0;
@@ -67,10 +66,6 @@ int stateMain = 0;
 //Choice variable for the main Menu.
 int choiceMain = 0;
 
-
-
-
-
 //Some constants and some resources:
 const int RESPONSE_TIMEOUT = 6000; //ms to wait for response from host
 const uint16_t OUT_BUFFER_SIZE = 1000; //size of buffer to hold HTTP response
@@ -78,10 +73,6 @@ char old_response[OUT_BUFFER_SIZE]; //char array buffer to hold HTTP request
 char response[OUT_BUFFER_SIZE]; //char array buffer to hold HTTP request
 
 char host[] = "608dev-2.net";
-
-
-
-
 
 //Variable for storing the prompt for redisplaying during voting rounds.
 char old_prompt[150] = {0};
@@ -218,11 +209,11 @@ void setup() {
   // Prepares the Console for Debu
   Serial.begin(115200);
   // Loads the Wifi Module
-  loadWifi();
+  load_wifi();
   // Initialize the TFT Screen
-  initTft();
+  init_tft();
   // Initialize the accelerometer
-  initImu();
+  init_imu();
 
   pinMode(BUTTON_PIN1, INPUT_PULLUP);
   pinMode(BUTTON_PIN2, INPUT_PULLUP);
@@ -230,18 +221,49 @@ void setup() {
   printStartScreen();
   stateMain = START;
   EEPROM.begin(150);
+}
 
-  // New Way of Sending a request
-  char params[50] = "";
-  add_key(params, "room_code", "ABCD"); // "room_code=ABCD"
-  server_get("waiting_for_votes", params);
-  Serial.println(response);
+/*----------------------------------
+ * read_from_storage Function: Reads the string
+ * Arguments:
+ *    int start_index: The index of EEPROM to start reading data from
+ * Return value:
+ *    char*: The resulting charstar
+ */
+void read_from_storage (char* output, int start_index=0) {
+  // Empty the input
+  output[0] = '\0';
+  // Begin reading the EEPROM from the index
+  int index = start_index;
+  while (EEPROM.read(index) != 255){
+    char temp[5] = {(char) EEPROM.read(index)};
+    strcat(output,temp);
+    index++;
+  }
+}
 
+/*----------------------------------
+ * save_to_storage Function: Reads the string
+ * Arguments:
+ *    char* word: The word to store to the memory
+ *    int start_index: The index of EEPROM to start saving the data to
+ * Return value:
+ *    char*: The resulting char array
+ */
+void save_to_storage (char* input_string, int start_index=0) {
+  // Saves the Token
+  for(int i = start_index; i < strlen(input_string) + start_index;i++) {
+    EEPROM.write(i, (uint8_t) response [i - start_index]);
+    EEPROM.commit();
+  }
+  // Write a blank at the end so you can use the read_from_storae
+  EEPROM.write(strlen(input_string) + start_index, 255);
+  EEPROM.commit();
 }
 
 
 void loop() {
-
+  // Load the Inputs to the Finite State Machine
   float x, y;
   get_angle(&x, &y); //get angle values
   int btn1 = button1.update(); //get button value
@@ -249,52 +271,58 @@ void loop() {
 
   char body[100];
 
-  switch(stateMain){
+  switch(stateMain) {
     case START:
-      if (btn2 == 1 || btn1 == 1){
-        if (EEPROM.read(0) == 255){
-          stateMain = INPUTUSER;
-          tft.fillScreen(TFT_WHITE);
-          tft.setTextSize(1);
-          tft.setCursor(3,3);
-          tft.println("Input Username:");
-          tft.println("1: Select");
-          tft.println("2: Submit");
-        }
-        else{
-          stateMain = OLDUSER;
-          int index = 0;
+      // Ignore absense of input on the main screen
+      if (!btn2 && !btn1)
+        break;
 
-          while (EEPROM.read(index) != 255){
-            char temp[5] = {(char)EEPROM.read(index)};
-            strcat(storedUser,temp);
-            index++;
-          }
-          tft.fillScreen(TFT_WHITE);
-          tft.setTextSize(1);
-          tft.setCursor(3,3);
-          tft.println("Would you like to");
-          tft.println("use the name:\n");
+      // Read the first word stored in the memory, save it to old_user
+      read_from_storage(storedUser, 0);
 
-          tft.println(storedUser);
-          tft.print("\n");
-          tft.println("1: Yes");
-          tft.println("2: No");
-        }
+      // No old history
+      if (strlen(storedUser) == 0) {
+        stateMain = INPUTUSER;
+        tft.fillScreen(TFT_WHITE);
+        tft.setTextSize(1);
+        tft.setCursor(3,3);
+        tft.println("Input Username:");
+        tft.println("1: Select");
+        tft.println("2: Submit");
+        break;
       }
+      // There is history
+      stateMain = OLD_USER;
+
+      tft.fillScreen(TFT_WHITE);
+      tft.setTextSize(1);
+      tft.setCursor(3,3);
+      tft.println("Would you like to");
+      tft.println("use the name:\n");
+
+      tft.println(storedUser);
+      tft.print("\n");
+      tft.println("1: Yes");
+      tft.println("2: No");
+
       break;
     case MAIN:
+      // When btn 1 clicked, change selection
       if (btn1 == 1){
         choiceMain = (choiceMain+1) % 2;
-        printMenu(choiceMain);
+        printMenu (choiceMain);
+        break;
       }
-      else if (btn2 == 1) {
+      // When btn 2 clicked, confirm selection
+      if (btn2 == 1) {
+        // Enter the Create State
         if (choiceMain == 0) {
           stateMain = CREATE;
           isUserHost = true;
           tft.setCursor(3,3);
           tft.print("Fetching room key...");
         }
+        // Enter the Join State
         else {
           stateMain = JOIN;
           tft.fillScreen(TFT_WHITE);
@@ -302,7 +330,6 @@ void loop() {
           tft.setCursor(5,3);
           tft.println("Input Key:");
           tft.setTextSize(1);
-          tft.setCursor (3,30);
           tft.setCursor(3,80);
           tft.println("1: Select");
           tft.setCursor(3,90);
@@ -313,8 +340,9 @@ void loop() {
     case CREATE:
       tft.fillScreen(TFT_WHITE);
 
-      // Does a create_room action
+      // POST create a room
       server_post("create_room", "");
+
       // Saves the for character response to roomKey
       strcpy(roomKey,response);
       memset(response,0,sizeof(response));
@@ -424,7 +452,7 @@ void loop() {
       }
 
       if (btn1 == 2){
-        stateMain = STARTGAME;
+        stateMain = BLUFFING;
 
         // Remove trailing white space from the room key
         if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
@@ -487,7 +515,7 @@ void loop() {
         server_get("in_lobby", body);
 
         if (strcmp(response,"false") == 0){
-          stateMain = STARTGAME;
+          stateMain = BLUFFING;
 
           // Remove trailing white space from the room key
           if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
@@ -508,12 +536,12 @@ void loop() {
           tft.println("Input Response:");
           tft.println("1: select");
           tft.println("2: submit");
-          
+
         }
       }
       break;
-    case STARTGAME:
-      if(millis()-last_post >1000){
+    case BLUFFING:
+      if(millis()-last_post > 1000){
         last_post = millis();
         submission_timer= submission_timer-1;
       }
@@ -586,7 +614,8 @@ void loop() {
       primary_timer = millis();
       break;
     case VOTE:
-      if(millis()-last_post >1000){
+
+      if(millis() - last_post > 1000){
         last_post = millis();
         submission_timer= submission_timer-1;
       }
@@ -609,6 +638,7 @@ void loop() {
       tft.setCursor(0,130);
       tft.print(submission_timer);
 
+      // On a Long Press, transition to waiting for votes
       if (btn1 == 2){
         submission_timer = 60;
         stateMain = WAITINGVOTES;
@@ -618,8 +648,7 @@ void loop() {
         sprintf(choice, "%d", choice_vote-1);
 
         // Remove trailing white space from the room key
-        if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
-          roomKey[strlen(roomKey)-1] = '\0';
+        if(strlen(roomKey) == 5) roomKey[strlen(roomKey)-1] = '\0';
 
         // Sends the choice to the server as a post request
         body[0] = '\0';
@@ -631,7 +660,7 @@ void loop() {
         tft.fillScreen(TFT_WHITE);
         tft.setCursor(3,10);
         tft.println(response);
-        last_post=millis();
+        last_post = millis();
       }
       break;
     case WAITINGVOTES:
@@ -648,7 +677,7 @@ void loop() {
         server_get("waiting_for_votes", body);
 
         if (strcmp(response,"false") == 0 && roundNumber < 7){
-          stateMain = STARTGAME;
+          stateMain = BLUFFING;
 
           // Remove trailing white space from the room key
           if(strlen(roomKey) > 4 && roomKey[strlen(roomKey)-1] == ' ')
@@ -765,7 +794,7 @@ void loop() {
         }
       }
       break;
-    case OLDUSER:
+    case OLD_USER:
       if (btn1 == 1){
         memset(user,0,sizeof(user));
         strcpy(user,storedUser);
