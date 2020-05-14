@@ -10,8 +10,6 @@ Below is the explanation of Team 33's final project. Thank you for all the work 
 
 Team 33 (Tommy Heng, Isabella Kang, Daniel Vuong, Karen Gao, and Anushka Nair)
 
-# Table of Contents
-
 # What is JoeBox Games - Bluffalo?
 
 Bluffalo is a bluffing multiplayer party game supporting up to six players connected to a shared web server. There are three rounds (first two rounds have three words, and the last "final" round has one word), where in each round, an obscure word and its definition is randomly chosen from a predetermined pool of words, where one word in the definition is blanked out. Players must use their ESP to enter a word that they believe appears legitimate. If a player happens to enter the correct answer, they are informed of this and encouraged to enter a false answer. The shared server then presents all players’ answers as well as the correct answer. Players must select the answer they believe to be correct. A player scores points by selecting the correct answer, or by having other players select their fake answer.
